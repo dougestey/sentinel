@@ -41,6 +41,8 @@ module.exports = {
 
   models: {
 
+    datastore: 'thunder',
+
     /***************************************************************************
     *                                                                          *
     * To help avoid accidents, Sails automatically sets the automigration      *

@@ -12,12 +12,13 @@
     "kue": "^0.11.6",
     "lodash": "3.10.1",
     "qs": "^6.5.1",
+    "redis": "^2.8.0",
     "request": "^2.83.0",
-    "sails": "^1.0.0-45",
+    "sails": "1.0.0-45",
     "sails-hook-grunt": "^3.0.2",
     "sails-hook-orm": "^2.0.0-16",
     "sails-hook-sockets": "^1.4.0",
-    "sails-mongo": "^0.12.2",
+    "sails-mongo": "^1.0.0-11",
     "socket.io-redis": "5.2.0"
   },
   "devDependencies": {

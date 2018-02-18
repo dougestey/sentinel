@@ -48,7 +48,7 @@ let _commitKill = async(killmail) => {
     fleetComposition,
     fleetAffiliation,
     totalAttackers
-  });
+  }).fetch();
 
   return createdKill;
 };

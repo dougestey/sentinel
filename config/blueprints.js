@@ -28,6 +28,9 @@ module.exports.blueprints = {
 
   // rest: true,
 
+  prefix: '/api',
+
+  pluralize: true
 
   /***************************************************************************
   *                                                                          *

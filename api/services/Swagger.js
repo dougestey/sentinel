@@ -5,13 +5,9 @@
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
-const ESI_AUTH_URL = 'https://login.eveonline.com/oauth/token';
-
 let ESI = require('eve-swagger-simple'),
     request = require('request'),
-    qs = require('qs'),
-    client_id = process.env.ESI_CLIENT_ID,
-    client_secret = process.env.ESI_CLIENT_SECRET;
+    qs = require('qs');
 
 module.exports = {
 
@@ -37,7 +33,7 @@ module.exports = {
         name,
         description,
         published
-      });
+      }).fetch();
     } else if (!localType.name) {
       let { name, description, published } = await ESI.request(`/universe/types/${typeId}`);
 
@@ -100,7 +96,7 @@ module.exports = {
         ticker,
         memberCount,
         alliance: alliance ? alliance.id : undefined
-      });
+      }).fetch();
     }
 
     return localCorporation;
@@ -113,7 +109,7 @@ module.exports = {
       let { name, ticker } = await ESI.request(`/alliances/${allianceId}`);
 
       if (!localAlliance)
-        localAlliance = await Alliance.create({ allianceId, name, ticker });
+        localAlliance = await Alliance.create({ allianceId, name, ticker }).fetch();
 
       if (!localAlliance.name)
         localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();
