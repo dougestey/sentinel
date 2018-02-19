@@ -9,16 +9,19 @@ module.exports = {
 
   attributes: {
 
-    corporationId: {
-      type: 'number',
-      unique: true
-    },
+    corporationId: { type: 'number', unique: true },
 
     name: 'string',
 
     ticker: 'string',
 
-    memberCount: 'number'
+    memberCount: 'number',
+
+    activeCombatPilots: 'number',
+
+    hasSupers: 'boolean',
+
+    dangerRatio: 'number'
 
   }
 

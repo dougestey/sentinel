@@ -9,14 +9,17 @@ module.exports = {
 
   attributes: {
 
-    allianceId: {
-      type: 'number',
-      unique: true
-    },
+    allianceId: { type: 'number', unique: true },
 
     name: 'string',
 
-    ticker: 'string'
+    ticker: 'string',
+
+    activeCombatPilots: 'number',
+
+    hasSupers: 'boolean',
+
+    dangerRatio: 'number'
 
   }
 

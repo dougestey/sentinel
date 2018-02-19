@@ -9,24 +9,17 @@ module.exports = {
 
   attributes: {
 
-    characterId: {
-      type: 'number',
-      unique: true
-    },
+    characterId: { type: 'number', unique: true },
 
     name: 'string',
 
-    system: {
-      model: 'system'
-    },
+    // Relationships
 
-    corporation: {
-      model: 'corporation'
-    },
+    system: { model: 'system' },
 
-    alliance: {
-      model: 'alliance'
-    }
+    corporation: { model: 'corporation' },
+
+    alliance: { model: 'alliance' }
 
   }
 

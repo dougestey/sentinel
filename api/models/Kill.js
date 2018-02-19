@@ -13,25 +13,17 @@ module.exports = {
 
     time: 'string',
 
-    systemId: 'number',
+    position: 'json',
 
-    totalAttackers: 'number',
+    // Relationships
 
-    victimCharacterId: 'number',
+    ship: { model: 'type' },
 
-    victimShipTypeId: 'number',
+    victim: { model: 'character' },
 
-    victimCorporationId: 'number',
+    system: { model: 'system' },
 
-    victimAllianceId: 'number',
-
-    attackerCharacterId: 'number',
-
-    attackerShipTypeId: 'number',
-
-    attackerCorporationId: 'number',
-
-    attackerAllianceId: 'number'
+    fleet: { model: 'fleet' }
 
   }
 

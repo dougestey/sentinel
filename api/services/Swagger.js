@@ -22,6 +22,10 @@ module.exports = {
     return resolvedSystems;
   },
 
+  async names(ids) {
+    return ESI.request('/universe/names', { ids });
+  },
+
   async type(typeId) {
     let localType = await Type.findOne({ typeId }), type;
 
