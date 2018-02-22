@@ -1,4 +1,4 @@
-# Thunder
+# Sentinel
 
 A WebSocket-compatible fleet tracker for EVE Online, built [on Sails.js](https://sailsjs.com/).
 

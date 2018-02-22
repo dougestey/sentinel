@@ -17,10 +17,8 @@ module.exports = {
 
     configuration: {
       type: 'string',
-      isIn: ['roam', 'gatecamp', 'hsgank']
+      isIn: ['solo', 'roam', 'gatecamp', 'hsgank', 'unknown']
     },
-
-    composition: 'json',
 
     efficiency: 'number',
 
@@ -28,11 +26,13 @@ module.exports = {
 
     system: { model: 'system' },
 
-    characters: { model: 'character' },
+    characters: { collection: 'character' },
 
     corporations: { collection: 'corporation' },
 
     alliances: { collection: 'alliance' },
+
+    composition: { collection: 'type' },
 
     engagements: { collection: 'engagement' },
 

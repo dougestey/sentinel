@@ -1,65 +1,55 @@
 /**
  * ZkillResolve
  *
- * @description :: Service to resolve data from zKill.
+ * @description :: Resolves zKill data to local model types.
  * @help        :: https://github.com/zKillboard/RedisQ
  */
 
-let _buildCharacter = async(record) => {
-  let { name } = await Swagger.characterPublic(record.characterId),
-      ship = await Swagger.type(record.shipTypeId),
-      corporation = await Swagger.corporation(record.corporationId),
-      alliance;
-
-  if (record.allianceId)
-    alliance = await Swagger.alliance(record.allianceId);
-
-  return {
-    name,
-    ship: ship.name,
-    corporation: corporation.name,
-    alliance: alliance ? alliance.name : undefined
-  };
-};
-
 module.exports = {
 
-  async kill(record) {
+  async kill(package) {
+
+    let { killmail } = package;
+
+    if (!killmail)
+      return;
+
     let {
+      killmail_id: killId,
+      killmail_time: time,
+      victim: {
+        character_id: characterId,
+        position,
+        ship_type_id: shipTypeId,
+        solar_system_id: systemId
+      }
+    } = killmail;
+
+    // Check for local record. If it exists, cancel further logic.
+    let existingRecord = await Kill.findOne({ killId });
+
+    if (existingRecord)
+      return existingRecord;
+
+    let ship = await Swagger.type(shipTypeId),
+        victim = await Swagger.character(characterId),
+        system = await Swagger.system(systemId),
+        fleet;
+
+    if (!package.zkb.npc)
+      fleet = await identifier.fleet(package);
+
+    let newRecord = await Kill.create({
       killId,
       time,
-      systemId,
-      fleetComposition,
-      fleetAffiliation,
-      totalAttackers } = record;
-
-    let victim = await _buildCharacter({
-      characterId: record.victimCharacterId,
-      shipTypeId: record.victimShipTypeId,
-      corporationId: record.victimCorporationId,
-      allianceId: record.victimAllianceId
-    });
-
-    let attacker = await _buildCharacter({
-      characterId: record.attackerCharacterId,
-      shipTypeId: record.attackerShipTypeId,
-      corporationId: record.attackerCorporationId,
-      allianceId: record.attackerAllianceId
-    });
-
-    let { name: system } = await Swagger.system(systemId);
-
-    return {
-      killId,
-      time,
-      systemId,
-      system,
+      position,
+      ship,
       victim,
-      attacker,
-      fleetComposition,
-      fleetAffiliation,
-      totalAttackers
-    };
+      system,
+      fleet
+    }).fetch();
+
+    return newRecord;
   }
 
 };

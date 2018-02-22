@@ -1,5 +1,5 @@
 {
-  "name": "thunder",
+  "name": "sentinel",
   "private": false,
   "version": "0.0.0",
   "description": "An automated fleet tracker for EVE Online.",
@@ -7,6 +7,7 @@
   "dependencies": {
     "async": "2.0.1",
     "connect-redis": "3.2.0",
+    "dotenv-safe": "^5.0.1",
     "eve-swagger-simple": "^1.1.0",
     "grunt": "1.0.1",
     "kue": "^0.11.6",
@@ -33,7 +34,7 @@
   "main": "app.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/dougestey/thunder.git"
+    "url": "git://github.com/dougestey/sentinel.git"
   },
   "author": "doug.estey@gmail.com",
   "license": "",

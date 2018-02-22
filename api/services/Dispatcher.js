@@ -1,12 +1,12 @@
 /**
- * ActiveSockets
+ * Dispatcher
  *
- * @description :: Keeps track of active client sockets.
+ * @description :: Dispatches data to interested entities.
  * @help        :: See https://next.sailsjs.com/documentation/concepts/services
  */
 
 
-let ActiveSockets = {
+let Dispatcher = {
 
   // Process the kill data so we can act on it.
   async processKill(record) {
@@ -27,4 +27,4 @@ let ActiveSockets = {
 
 };
 
-module.exports = ActiveSockets;
+module.exports = Dispatcher;

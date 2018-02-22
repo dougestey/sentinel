@@ -30,18 +30,18 @@ module.exports = {
   **************************************************************************/
   datastores: {
 
-    thunder: {
+    sentinel: {
       adapter: 'sails-mongo',
       host: '127.0.0.1',
       port: 27017,
-      database: 'thunder_prod'
+      database: 'sentinel_prod'
     },
 
   },
 
   models: {
 
-    datastore: 'thunder',
+    datastore: 'sentinel',
 
     /***************************************************************************
     *                                                                          *

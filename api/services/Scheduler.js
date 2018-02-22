@@ -7,8 +7,6 @@
 
 module.exports = {
 
-  // zKill
-
   readKillStream() {
     let job = sails.config.jobs.create('read_kill_stream');
 

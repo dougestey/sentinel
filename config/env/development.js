@@ -9,7 +9,7 @@
 module.exports = {
 
   models: {
-    datastore: 'thunder'
+    datastore: 'sentinel'
   },
 
   port: 8080

@@ -9,12 +9,17 @@
  * https://sailsjs.com/config/bootstrap
  */
 
+require('dotenv-safe').config();
+
 module.exports.bootstrap = async function(done) {
 
-  // Don't forget to trigger `done()` when this bootstrap function's logic is finished.
-  // (otherwise your server will never lift, since it's waiting on the bootstrap)
-  // await Swagger.initialize();
+  if (process.env.BOOTSTRAP_DB === 'true')
+    await Swagger.initialize();
+
+  // Job queue kickoff (config/jobs.js)
   sails.config.jobs.init();
+
+  // Needed for Sails to complete lift.
   return done();
 
 };

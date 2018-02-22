@@ -13,9 +13,9 @@ module.exports = {
 
     name: 'string',
 
-    // Relationships
+    dangerRatio: 'number',
 
-    system: { model: 'system' },
+    // Relationships
 
     corporation: { model: 'corporation' },
 
