@@ -23,7 +23,7 @@ module.exports = {
 
     system: { model: 'system' },
 
-    fleet: { model: 'fleet' }
+    fleets: { collection: 'fleet' }
 
   }
 

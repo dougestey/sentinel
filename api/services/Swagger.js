@@ -26,27 +26,47 @@ module.exports = {
     return ESI.request('/universe/names', { ids });
   },
 
+  async character(characterId) {
+    let localCharacter = await Character.findOne({ characterId });
+
+    if (!localCharacter || localCharacter && localCharacter.lastZkillUpate > ) {
+      let {
+        name,
+        corporation_id: corporationId,
+        alliance_id: allianceId
+      } = await ESI.request(`/characters/${characterId}`);
+
+      let alliance = allianceId ? await Swagger.alliance({ allianceId }),
+          corporation = corporationId ? await Swagger.corporation({ corporationId });
+
+      localCharacter = await Character.create({
+        characterId,
+        name,
+        corporation,
+        alliance
+      }).fetch();
+    }
+
+    return localCharacter;
+  },
+
   async type(typeId) {
-    let localType = await Type.findOne({ typeId }), type;
+    let localType = await Type.findOne({ typeId });
 
     if (!localType) {
-      let { name, description, published } = await ESI.request(`/universe/types/${typeId}`);
+      let { name } = await ESI.request(`/universe/types/${typeId}`);
 
       localType = await Type.create({
         typeId,
-        name,
-        description,
-        published
+        name
       }).fetch();
     } else if (!localType.name) {
-      let { name, description, published } = await ESI.request(`/universe/types/${typeId}`);
+      let { name } = await ESI.request(`/universe/types/${typeId}`);
 
       await Type.update({ typeId }, {
         typeId,
-        name,
-        description,
-        published
-      });
+        name
+     });
 
       localType = await Type.findOne({ typeId });
     }

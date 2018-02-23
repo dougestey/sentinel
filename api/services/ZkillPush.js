@@ -8,9 +8,8 @@
 const ZKILL_PUSH_URL = 'https://redisq.zkillboard.com/listen.php?ttw=3',
       request = require('request');
 
-let _meetsKillRequirements = (package) => {
-  if (package.zkb.npc && process.env.TRACK_NPC === 'false')
-    return false;
+let _shouldTrack = (package) => {
+  return !package.zkb.npc || process.env.TRACK_NPC === 'true';
 };
 
 module.exports = {
@@ -33,7 +32,7 @@ module.exports = {
         if (!decodedResponse.package)
           return resolve();
 
-        if (_meetsKillRequirements(decodedResponse.package))
+        if (_shouldTrack(decodedResponse.package))
           ZkillResolve.kill(decodedResponse.package);
           // Dispatcher.processKill(createdKill);
 

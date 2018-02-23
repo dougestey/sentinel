@@ -19,7 +19,13 @@ module.exports = {
 
     corporation: { model: 'corporation' },
 
-    alliance: { model: 'alliance' }
+    alliance: { model: 'alliance' },
+
+    // Meta
+
+    lastEsiUpdate: 'string',
+
+    lastZkillUpdate: 'string'
 
   }
 

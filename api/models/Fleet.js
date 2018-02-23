@@ -15,6 +15,8 @@ module.exports = {
 
     lastSeen: 'string',
 
+    composition: 'json',
+
     configuration: {
       type: 'string',
       isIn: ['solo', 'roam', 'gatecamp', 'hsgank', 'unknown']
@@ -28,13 +30,7 @@ module.exports = {
 
     characters: { collection: 'character' },
 
-    corporations: { collection: 'corporation' },
-
-    alliances: { collection: 'alliance' },
-
-    composition: { collection: 'type' },
-
-    engagements: { collection: 'engagement' },
+    // engagements: { collection: 'engagement' },
 
     kills: { collection: 'kill' }
 

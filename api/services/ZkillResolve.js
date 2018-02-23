@@ -33,23 +33,21 @@ module.exports = {
 
     let ship = await Swagger.type(shipTypeId),
         victim = await Swagger.character(characterId),
-        system = await Swagger.system(systemId),
-        fleet;
+        system = await Swagger.system(systemId);
 
-    if (!package.zkb.npc)
-      fleet = await identifier.fleet(package);
-
-    let newRecord = await Kill.create({
+    let kill = await Kill.create({
       killId,
       time,
       position,
       ship,
       victim,
-      system,
-      fleet
+      system
     }).fetch();
 
-    return newRecord;
+    if (!package.zkb.npc)
+      Identifier.fleet(package.killmail, system, kill);
+
+    return kill;
   }
 
 };
