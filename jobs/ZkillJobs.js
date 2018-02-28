@@ -1,6 +1,6 @@
 const everyFiveSeconds = 5000;
 
-let ZkillPolling = {
+let ZkillJobs = {
 
   kickoff() {
     setInterval(Scheduler.readKillStream, everyFiveSeconds);
@@ -8,4 +8,4 @@ let ZkillPolling = {
 
 };
 
-module.exports = ZkillPolling;
+module.exports = ZkillJobs;

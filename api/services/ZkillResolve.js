@@ -42,7 +42,7 @@ module.exports = {
       ship,
       victim,
       system
-    }).fetch();
+    }).fetch().populate('system');
 
     if (!package.zkb.npc)
       Identifier.fleet(package.killmail, system, kill);

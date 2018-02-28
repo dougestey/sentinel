@@ -19,10 +19,19 @@ module.exports = {
 
     configuration: {
       type: 'string',
-      isIn: ['solo', 'roam', 'gatecamp', 'hsgank', 'unknown']
+      isIn: [
+        'solo',
+        'roam',
+        'gatecamp',
+        'hsgank',
+        'hswar',
+        'unknown'
+      ]
     },
 
     efficiency: 'number',
+
+    dangerRatio: 'number',
 
     // Relationships
 

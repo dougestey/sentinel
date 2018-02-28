@@ -48,7 +48,8 @@ function init() {
   //        worker process
 
   // Interval Jobs
-  require('../jobs/ZkillPolling').kickoff();
+  require('../jobs/ZkillJobs').kickoff();
+  require('../jobs/FleetJobs').kickoff();
 
   // remove jobs once completed
   jobs.on('job complete', function(id) {
