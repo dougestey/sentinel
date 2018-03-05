@@ -9,7 +9,17 @@ module.exports = {
 
   attributes: {
 
-    // TODO
+    startTime: 'string',
+
+    endTime: 'string',
+
+    // Relationships
+
+    fleet: { model: 'fleet' },
+
+    kills: { collection: 'kill' },
+
+    systems: { collection: 'system' }
 
   }
 

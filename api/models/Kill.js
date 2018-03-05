@@ -21,9 +21,7 @@ module.exports = {
 
     victim: { model: 'character' },
 
-    system: { model: 'system' },
-
-    fleets: { collection: 'fleet' }
+    system: { model: 'system' }
 
   }
 

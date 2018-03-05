@@ -5,121 +5,91 @@
  * @help        :: See https://next.sailsjs.com/documentation/concepts/services
  */
 
-const moment = require('moment');
+let _resolveCharacters = async(ids) => {
+  let resolved = ids.map(async(id) => {
+    let character = await Swagger.character(id);
 
-let _determineFleet = async(characters) => {
-  //
+    return character.id;
+  });
+
+  return Promise.all(resolved);
 };
 
-let _factorFleetSize = (characters) => {
-  return characters.length === 1 ? 'solo' : 'roam';
+let _createFleet = async(killmail, system, kill) => {
+  let { killmail_time: startTime } = killmail,
+      lastSeen = startTime,
+      characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
+      composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id)),
+      configuration = 'unknown',
+      isActive = true;
+
+  let fleet = await Fleet.create({
+    startTime,
+    lastSeen,
+    composition,
+    configuration,
+    isActive,
+    system
+  }).fetch();
+
+  await Fleet.addToCollection(fleet.id, 'characters').members(characters);
+  await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 };
 
-let _determineConfiguration = async(newKill, previousKills) => {
-  if (previousKills) {
-    let allKills = previousKills.push(newKill);
-        systems = _uniq(allKills.map((k) => k.system)),
-        times = allKills.sort((a, b) => a.time - b.time);
+let _updateFleet = async(fleet, { kill, system }) => {
+  let { time } = kill;
 
-    // systems.length
-  } else {
-    let { securityStatus } = newKill.system;
+  // If this is the newest kill for the fleet, update the fleet attrs.
+  if (fleet.lastSeen < time) {
+    let lastSeen = time,
+        characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
+        composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
 
-    // https://stackoverflow.com/questions/6665997/switch-statement-for-greater-than-less-than
-    if (Math.round(securityStatus) === -1) {
-      // WH
-      return _factorFleetSize(newKill.characters.length);
-    } else if (securityStatus <= 0.45 && securityStatus >= 0) {
-      // Lowsec
-      return _factorFleetSize(newKill.characters.length);
-    } else if (securityStatus < 0) {
-      // Nullsec
-      return _factorFleetSize(newKill.characters.length);
-    } else {
-      // Highsec
-      // TODO: War or gank?
-      return 'hsgank';
-    }
+    await Fleet.update(fleet.id, { lastSeen, characters, composition, system });
+    await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   }
-};
 
-let _determineEfficiency = async(newKill, previousKills) => {
-  // TODO: When we have Engagements
-};
-
-let _determineDangerRatio = async(newKill, previousKills) => {
-  //
-};
-
-let _updateFleetStats = async(kill, fleet) => {
-  if (existingFleet)
-    let { kills: previousKills } = await Fleet.find(fleet.id).populate('kills');
-
-  return {
-    configuration: _determineConfiguration(kill, previousKills),
-    // efficiency: _determineEfficiency(kill, previousKills),
-    dangerRatio: _determineDangerRatio(kill, previousKills)
-  }
-};
-
-let _updateActiveCharacters = async(fleet, characters) => {
-  //
+  await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 };
 
 let Identifier = {
 
   async fleet(killmail, system, kill) {
-    let { killmail_time: lastSeen } = killmail,
-        characters,
-        composition;
+    let attackers = killmail.attackers.filter((a) => a.corporation_id).map((a) => a.character_id),
+        isNewFleet;
 
-    let fleet = await _determineFleet(killmail.attackers),
-        { configuration, dangerRatio } = await _updateFleetStats(kill, fleet),
-        characters = killmail.attackers.map((a) => a.character_id);
+    // Killed by NPCs = no fleet
+    if (!attackers.length)
+      return;
 
-    if (fleet) {
-      if (fleet.lastSeen > lastSeen) {
-        // Old kill
-        lastSeen = fleet.lastSeen;
-        composition = fleet.composition;
-      } else {
-        // New kill
-        lastSeen = kill.time;
-        composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
+    let fleets = await Fleet.find({ isActive: true }),
+        fleetsAndCharacters = {};
+
+    _.forEach(fleets, (f) => {
+      fleetsAndCharacters[f.id] = f.characters;
+    });
+
+    let scoredFleets = _.map(fleetsAndCharacters, (characters, id) => {
+      let points = _.difference(attackers, characters).length,
+          score = parseInt(points) / attackers.length;
+
+      return { id, score };
+    });
+
+    // console.log('scoredFleets', scoredFleets);
+
+    // Lower score is better.
+    let bestMatch = _.last(_.sortBy(scoredFleets, 'score'));
+
+    console.log('bestMatch', bestMatch);
+
+    if (bestMatch) {
+      if (bestMatch.score < 1) {
+        _updateFleet(fleet, { kill, system });
       }
-
-      fleet = await Fleet.update(fleet.id, {
-        lastSeen,
-        composition,
-        configuration,
-        // efficiency,
-        dangerRatio,
-        system
-      }).fetch();
-
-      fleet = await _updateActiveCharacters(fleet, characters);
     } else {
-      // Assuming new fleet
-      let startTime = lastSeen;
-
-      composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
-
-      fleet = await Fleet.create({
-        startTime,
-        lastSeen,
-        composition,
-        configuration,
-        // efficiency,
-        dangerRatio,
-        system
-      }).fetch();
-
-      await Fleet.addToCollection(fleet.id, 'characters').members(characters);
+      _createFleet(killmail, system, kill);
     }
-
-    await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
-
-    return fleet;
   }
 
 };

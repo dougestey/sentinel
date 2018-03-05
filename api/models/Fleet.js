@@ -13,6 +13,8 @@ module.exports = {
 
     endTime: 'string',
 
+    isActive: 'boolean',
+
     lastSeen: 'string',
 
     composition: 'json',
@@ -20,7 +22,6 @@ module.exports = {
     configuration: {
       type: 'string',
       isIn: [
-        'solo',
         'roam',
         'gatecamp',
         'hsgank',
@@ -39,7 +40,7 @@ module.exports = {
 
     characters: { collection: 'character' },
 
-    // engagements: { collection: 'engagement' },
+    engagements: { collection: 'engagement' },
 
     kills: { collection: 'kill' }
 

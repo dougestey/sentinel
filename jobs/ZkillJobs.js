@@ -1,9 +1,9 @@
-const everyFiveSeconds = 5000;
+const everySecond = 1000;
 
 let ZkillJobs = {
 
   kickoff() {
-    setInterval(Scheduler.readKillStream, everyFiveSeconds);
+    setInterval(Scheduler.readKillStream, everySecond);
   }
 
 };

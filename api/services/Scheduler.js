@@ -16,6 +16,17 @@ module.exports = {
     });
 
     job.save();
+  },
+
+  determineFleetLife() {
+    let job = sails.config.jobs.create('determine_fleet_life');
+
+    job.on('failed', function(err) {
+      console.error('[Scheduler.readKillStream] Job failed');
+      console.error(err);
+    });
+
+    job.save();
   }
 
 };

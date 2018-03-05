@@ -27,23 +27,26 @@ module.exports = {
   },
 
   async character(characterId) {
+    if (!characterId)
+      return;
+
     let localCharacter = await Character.findOne({ characterId });
 
-    if (!localCharacter || localCharacter && localCharacter.lastZkillUpate > ) {
+    if (!localCharacter) {
       let {
         name,
         corporation_id: corporationId,
         alliance_id: allianceId
       } = await ESI.request(`/characters/${characterId}`);
 
-      let alliance = allianceId ? await Swagger.alliance({ allianceId }),
-          corporation = corporationId ? await Swagger.corporation({ corporationId });
+      let alliance = await Swagger.alliance(allianceId),
+          corporation = await Swagger.corporation(corporationId);
 
       localCharacter = await Character.create({
         characterId,
         name,
-        corporation,
-        alliance
+        corporation: corporation.id,
+        alliance: alliance ? alliance.id : undefined
       }).fetch();
     }
 
@@ -51,6 +54,9 @@ module.exports = {
   },
 
   async type(typeId) {
+    if (!typeId)
+      return;
+
     let localType = await Type.findOne({ typeId });
 
     if (!localType) {
@@ -60,15 +66,6 @@ module.exports = {
         typeId,
         name
       }).fetch();
-    } else if (!localType.name) {
-      let { name } = await ESI.request(`/universe/types/${typeId}`);
-
-      await Type.update({ typeId }, {
-        typeId,
-        name
-     });
-
-      localType = await Type.findOne({ typeId });
     }
 
     return localType;
@@ -101,6 +98,9 @@ module.exports = {
   },
 
   async corporation(corporationId) {
+    if (!corporationId)
+      return;
+
     let localCorporation = await Corporation.findOne({ corporationId });
 
     if (!localCorporation) {
@@ -127,6 +127,9 @@ module.exports = {
   },
 
   async alliance(allianceId) {
+    if (!allianceId)
+      return;
+
     let localAlliance = await Alliance.findOne({ allianceId });
 
     if (!localAlliance || !localAlliance.name) {
@@ -140,10 +143,6 @@ module.exports = {
     }
 
     return localAlliance;
-  },
-
-  character(characterId) {
-    return ESI.request(`/characters/${characterId}`);
-  },
+  }
 
 };

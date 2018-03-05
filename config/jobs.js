@@ -6,7 +6,8 @@
  *
  */
 
-var kue = require('kue');
+var kue = require('kue'),
+    moment = require('moment');
 
 var jobs = kue.createQueue({
       prefix: 'kue',
@@ -42,6 +43,30 @@ function init() {
       }, (error) => {
         done(error);
       });
+  });
+
+  jobs.process('determine_fleet_life', (job, done) => {
+    Fleet.find({ isActive: true }).populate('kills')
+      .then((fleets) => {
+        fleets.map((fleet) => {
+          let lastSeen = moment(fleet.lastSeen),
+              times = fleet.kills.map((kill) => kill.time);
+
+          times = times.filter((time) => {
+            let timeMoment = moment(time),
+                diff = lastSeen.diff(timeMoment, 'minutes');
+
+            if (parseInt(diff) < 55) {
+              return time;
+            }
+          });
+
+          if (!times.length)
+            Fleet.update(fleet.id, { isActive: false });
+        });
+
+        done(null);
+      })
   });
 
   // TODO:  if we ever cluster the server, these jobs should be in a
