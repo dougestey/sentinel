@@ -1,9 +1,9 @@
-const everySecond = 1000;
+const everyThreeSeconds = 1000 * 3;
 
 let ZkillJobs = {
 
   kickoff() {
-    setInterval(Scheduler.readKillStream, everySecond);
+    setInterval(Scheduler.readKillStream, everyThreeSeconds);
   }
 
 };

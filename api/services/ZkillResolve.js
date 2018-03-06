@@ -29,7 +29,7 @@ module.exports = {
     let existingRecord = await Kill.find({ killId });
 
     if (existingRecord.length)
-      return existingRecord[0];
+      return;
 
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
@@ -43,6 +43,18 @@ module.exports = {
       victim,
       system
     }).fetch();
+
+    // Notify WebSockets
+    let room = System.getRoomName(system);
+
+    sails.io.sockets.in.room.clients((err, members) => {
+      members.map(async(socketId) => {
+        let data = kill;
+
+        // Pipe it down to the client
+        sails.sockets.broadcast(socketId, 'kill', data);
+      });
+    });
 
     if (!package.zkb.npc)
       Identifier.fleet(package.killmail, system, kill);

@@ -18,8 +18,8 @@ module.exports = {
     job.save();
   },
 
-  determineFleetLife() {
-    let job = sails.config.jobs.create('determine_fleet_life');
+  determineFleetHealth() {
+    let job = sails.config.jobs.create('determine_fleet_health');
 
     job.on('failed', function(err) {
       console.error('[Scheduler.readKillStream] Job failed');

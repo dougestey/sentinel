@@ -45,7 +45,7 @@ module.exports = {
       localCharacter = await Character.create({
         characterId,
         name,
-        corporation: corporation.id,
+        corporation: corporation ? corporation.id : undefined,
         alliance: alliance ? alliance.id : undefined
       }).fetch();
     }

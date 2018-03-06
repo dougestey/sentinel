@@ -13,14 +13,14 @@ var jobs = kue.createQueue({
       prefix: 'kue',
       redis: {
         host: '127.0.0.1',
-        port: 6379,
+        port: 6378,
         auth: ''
       },
       disableSearch: true
     });
 
 // ui for jobs
-kue.app.listen(6565);
+kue.app.listen(6564);
 
 // give kue workers time to finish active job
 process.once('SIGTERM', function() {
@@ -45,24 +45,17 @@ function init() {
       });
   });
 
-  jobs.process('determine_fleet_life', (job, done) => {
-    Fleet.find({ isActive: true }).populate('kills')
+  jobs.process('determine_fleet_health', (job, done) => {
+    Fleet.find({ isActive: true })
       .then((fleets) => {
-        fleets.map((fleet) => {
+        fleets = fleets.map(async(fleet) => {
           let lastSeen = moment(fleet.lastSeen),
-              times = fleet.kills.map((kill) => kill.time);
+              now = moment();
 
-          times = times.filter((time) => {
-            let timeMoment = moment(time),
-                diff = lastSeen.diff(timeMoment, 'minutes');
+          let diff = now.diff(lastSeen, 'minutes');
 
-            if (parseInt(diff) < 55) {
-              return time;
-            }
-          });
-
-          if (!times.length)
-            Fleet.update(fleet.id, { isActive: false });
+          if (Math.abs(diff) > 55)
+            await Fleet.update(fleet.id, { isActive: false, endTime: fleet.lastSeen });
         });
 
         done(null);
@@ -80,7 +73,7 @@ function init() {
   jobs.on('job complete', function(id) {
     kue.Job.get(id, function(err, job) {
       if (err) {
-        console.log(`Job ${id} failed: ${error}`);
+        console.log(`Job ${id} failed: ${err}`);
       }
 
       if (err) { return; }

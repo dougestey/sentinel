@@ -17,7 +17,9 @@ module.exports = {
 
     // Relationships
 
-    fleets: { collection: 'fleet' }
+    fleets: { collection: 'fleet' },
+
+    kills: { collection: 'kill' }
 
   }
 

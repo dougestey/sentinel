@@ -12,6 +12,6 @@ module.exports = {
     datastore: 'sentinel'
   },
 
-  port: 8080
+  port: 8081
 
 };

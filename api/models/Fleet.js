@@ -26,6 +26,7 @@ module.exports = {
         'gatecamp',
         'hsgank',
         'hswar',
+        'blops',
         'unknown'
       ]
     },
