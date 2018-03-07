@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    systemId: 'number',
+    systemId: { type: 'number', unique: true },
 
     name: 'string',
 
@@ -17,9 +17,9 @@ module.exports = {
 
     // Relationships
 
-    fleets: { collection: 'fleet' },
+    fleets: { collection: 'fleet', via: 'system' },
 
-    kills: { collection: 'kill' }
+    kills: { collection: 'kill', via: 'system' }
 
   }
 

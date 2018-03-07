@@ -6,17 +6,21 @@
  */
 
 let _resolveCharacters = async(ids) => {
-  let resolved = ids.map(async(id) => {
-    let character = await Swagger.character(id);
+  let resolved = [];
+
+  for (let characterId of ids) {
+    let character = await Swagger.character(characterId);
 
     if (character)
-      return character.id;
-  });
+      resolved.push(character.id);
+  }
 
-  return Promise.all(resolved);
+  return _.compact(resolved);
 };
 
 let _createFleet = async(killmail, kill, system) => {
+  console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
+
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
@@ -31,59 +35,66 @@ let _createFleet = async(killmail, kill, system) => {
     configuration,
     isActive,
     system
-  }).fetch();
-
-  if (!fleet)
-    console.log('WTF: No fleet after create?');
-
-  characters = _.compact(characters);
+  })
+  .intercept((e) => console.log('Fleet create error:', e))
+  .fetch();
 
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  // Notify WebSockets
-  let room = System.getRoomName(system);
+  fleet = await Fleet.findOne(fleet.id)
+    .populate('system')
+    .populate('characters')
+    .populate('kills');
 
-  sails.io.sockets.in.room.clients((err, members) => {
-    members.map(async(socketId) => {
-      let data = await Fleet.findOne(fleet.id);
+  Dispatcher.notifySockets(fleet, 'fleet', system);
 
-      // Pipe it down to the client
-      sails.sockets.broadcast(socketId, 'fleet', data);
-    });
-  });
+  console.log(`Created new fleet ${fleet.id}`);
+
+  return fleet;
 };
 
 let _updateFleet = async(killmail, kill, system, fleet) => {
+  if (!fleet) {
+    return new Error('No fleet to update');
+  }
+
   let { time } = kill;
 
   let characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id));
 
-  characters = _.compact(characters);
+  await Fleet.addToCollection(fleet.id, 'characters').members(characters);
+  await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
   // If this is the newest kill for the fleet, update the fleet attrs.
   if (fleet.lastSeen < time) {
     let lastSeen = time,
         composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
 
-    await Fleet.update(fleet.id, { lastSeen, composition, system });
+    await Fleet.update({ id: fleet.id }, { lastSeen, composition, system });
   }
 
-  await Fleet.addToCollection(fleet.id, 'characters').members(characters);
-  await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
+  fleet = await Fleet.findOne(fleet.id)
+    .populate('system')
+    .populate('characters')
+    .populate('kills');
+
+  Dispatcher.notifySockets(fleet, 'fleet', system);
 
   console.log(`Fleet ${fleet.id} got a new kill!`);
+
+  return fleet;
 };
 
-// TODO: Deal with merging comps. Requires breaking changes to how we record the shiptypes.
 let _mergeFleets = async(fleets) => {
   console.log(`Merging fleets...`);
 
-  let record = _.last(fleets.sort((a, b) => a.characters.length - b.characters.length)),
+  // Record to merge into has already been determined in Identifier.fleet
+  let record = _.first(fleets),
       characters = [];
 
-  fleets.map(async(fleet) => {
-    characters.concat(fleet.characters);
+  for (let fleet of fleets) {
+    characters = characters.concat(fleet.characters.map((c) => c.id));
 
     if (fleet.startTime < record.startTime)
       record.startTime = fleet.startTime;
@@ -93,15 +104,16 @@ let _mergeFleets = async(fleets) => {
 
     if (fleet.id !== record.id)
       await Fleet.destroy({ id: fleet.id });
-  });
+  }
 
   characters = _.uniq(characters);
 
-  await Fleet.addToCollection(record.id, 'characters').members(characters);
+  await Fleet.replaceCollection(record.id, 'characters').members(characters);
 
-  let { startTime, lastSeen } = record;
+  let { startTime, lastSeen } = record,
+      fleet = await Fleet.update(record.id, { startTime, lastSeen }).fetch();
 
-  await Fleet.update(record.id, { startTime, lastSeen });
+  return _.first(fleet);
 };
 
 let Identifier = {
@@ -124,34 +136,39 @@ let Identifier = {
       let points = _.difference(attackers, characters).length,
           score = points / attackers.length;
 
-      return { id, score };
+      return { id, score, characters: characters.length };
     }).filter((f) => f.score !== 1);
 
-    console.log('');
+    scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
+
     console.log(scoredFleets);
 
     // 1 is the worst possible score (no matches) while 0 is the best (all matched)
-    let bestMatch = _.first(_.sortBy(scoredFleets, 'score'));
+    let bestMatch = _.first(scoredFleets), fleet;
 
     if (bestMatch) {
-      console.log(`Match for kill scored at ${(Math.abs(bestMatch.score - 1) * 100).toFixed(2)}%`);
+      console.log(`Match for kill ${killmail.killmail_id} scored at ${(Math.abs(bestMatch.score - 1) * 100).toFixed(2)}%`);
 
-      let fleet = _.find(fleets, (fleet) => fleet.id = bestMatch.id);
+      fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 
-      _updateFleet(killmail, kill, system, fleet);
+      if (!fleet) {
+        fleet = await _createFleet(killmail, kill, system);
+      } else {
+        if (scoredFleets.length > 1) {
+          let fleetsToMerge = scoredFleets.map((sf) => {
+            return _.find(fleets, (f) => f.id === sf.id);
+          });
+
+          fleet = await _mergeFleets(fleetsToMerge);
+        }
+
+        fleet = await _updateFleet(killmail, kill, system, fleet);
+      }
     } else {
-      console.log(`Creating new fleet for killmail ${killmail.killmail_id}`);
-
-      _createFleet(killmail, kill, system);
+      fleet = await _createFleet(killmail, kill, system);
     }
 
-    if (scoredFleets.length > 1) {
-      let fleetsToMerge = scoredFleets.map((f) => {
-        return _.find(fleets, (fleet) => fleet.id = f.id);
-      });
-
-      _mergeFleets(fleetsToMerge);
-    }
+    return fleet;
   }
 
 };

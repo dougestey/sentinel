@@ -15,11 +15,11 @@ module.exports = {
 
     // Relationships
 
-    fleet: { model: 'fleet' },
+    // fleet: { model: 'fleet' },
 
-    kills: { collection: 'kill' },
+    // kills: { collection: 'kill' },
 
-    systems: { collection: 'system' }
+    // systems: { collection: 'system' }
 
   }
 

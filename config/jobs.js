@@ -13,7 +13,7 @@ var jobs = kue.createQueue({
       prefix: 'kue',
       redis: {
         host: '127.0.0.1',
-        port: 6378,
+        port: 6666,
         auth: ''
       },
       disableSearch: true
@@ -40,8 +40,13 @@ function init() {
         } else {
           done(null, result);
         }
+
+        // Keep movin' buddy, these kills ain't gonna track themselves.
+        require('../jobs/ZkillJobs').readKillStream();
       }, (error) => {
         done(error);
+
+        require('../jobs/ZkillJobs').readKillStream();
       });
   });
 
@@ -54,7 +59,7 @@ function init() {
 
           let diff = now.diff(lastSeen, 'minutes');
 
-          if (Math.abs(diff) > 55)
+          if (Math.abs(diff) > 30)
             await Fleet.update(fleet.id, { isActive: false, endTime: fleet.lastSeen });
         });
 
@@ -68,6 +73,7 @@ function init() {
   // Interval Jobs
   require('../jobs/ZkillJobs').kickoff();
   require('../jobs/FleetJobs').kickoff();
+  require('../jobs/SwaggerJobs').kickoff();
 
   // remove jobs once completed
   jobs.on('job complete', function(id) {

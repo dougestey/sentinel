@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    killId: 'number',
+    killId: { type: 'number', unique: true },
 
     time: 'string',
 
@@ -21,7 +21,9 @@ module.exports = {
 
     victim: { model: 'character' },
 
-    system: { model: 'system' }
+    system: { model: 'system' },
+
+    fleet: { model: 'fleet' }
 
   }
 

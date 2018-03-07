@@ -21,6 +21,8 @@ module.exports = {
 
     alliance: { model: 'alliance' },
 
+    fleets: { collection: 'fleet', via: 'characters' },
+
     // Meta
 
     lastEsiUpdate: 'string',

@@ -39,15 +39,18 @@ module.exports = {
         alliance_id: allianceId
       } = await ESI.request(`/characters/${characterId}`);
 
-      let alliance = await Swagger.alliance(allianceId),
-          corporation = await Swagger.corporation(corporationId);
+      let alliance = await Swagger.alliance(allianceId);
+
+      let corporation = await Swagger.corporation(corporationId, alliance);
 
       localCharacter = await Character.create({
         characterId,
         name,
-        corporation: corporation ? corporation.id : undefined,
-        alliance: alliance ? alliance.id : undefined
-      }).fetch();
+        corporation: corporation ? corporation.id : null,
+        alliance: alliance ? alliance.id : null
+      })
+      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a character that already exists. ${e}`) })
+      .fetch();
     }
 
     return localCharacter;
@@ -65,7 +68,9 @@ module.exports = {
       localType = await Type.create({
         typeId,
         name
-      }).fetch();
+      })
+      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a type that already exists. ${e}`) })
+      .fetch();
     }
 
     return localType;
@@ -84,20 +89,20 @@ module.exports = {
     if (!localSystem.name) {
       let system = await ESI.request(`/universe/systems/${systemId}`), constellation, star;
 
-      await System.update({ systemId }, {
+      localSystem = await System.update({ systemId }, {
         name: system.name,
         position: system.position,
         securityStatus: system.security_status,
         securityClass: system.security_class
-      });
-    }
+      }).fetch();
 
-    localSystem = await System.findOne({ systemId });
+      localSystem = _.first(localSystem);
+    }
 
     return localSystem;
   },
 
-  async corporation(corporationId) {
+  async corporation(corporationId, allianceRecord) {
     if (!corporationId)
       return;
 
@@ -106,21 +111,18 @@ module.exports = {
     if (!localCorporation) {
       let { name,
             ticker,
-            member_count: memberCount,
-            alliance_id: allianceId
-          } = await ESI.request(`/corporations/${corporationId}`),
-          alliance;
-
-      if (allianceId)
-        alliance = await Alliance.findOrCreate({ allianceId }, { allianceId });
+            member_count: memberCount
+          } = await ESI.request(`/corporations/${corporationId}`);
 
       localCorporation = await Corporation.create({
         corporationId,
         name,
         ticker,
         memberCount,
-        alliance: alliance ? alliance.id : undefined
-      }).fetch();
+        alliance: allianceRecord ? allianceRecord.id : null
+      })
+      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a corp that already exists. ${e}`) })
+      .fetch();
     }
 
     return localCorporation;
@@ -135,11 +137,14 @@ module.exports = {
     if (!localAlliance || !localAlliance.name) {
       let { name, ticker } = await ESI.request(`/alliances/${allianceId}`);
 
-      if (!localAlliance)
-        localAlliance = await Alliance.create({ allianceId, name, ticker }).fetch();
-
-      if (!localAlliance.name)
+      if (!localAlliance) {
+        localAlliance = await Alliance.create({ allianceId, name, ticker })
+        .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create an alliance that already exists. ${e}`) })
+        .fetch();
+      } else {
         localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();
+        localAlliance = _.first(localAlliance);
+      }
     }
 
     return localAlliance;

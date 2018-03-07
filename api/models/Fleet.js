@@ -39,11 +39,11 @@ module.exports = {
 
     system: { model: 'system' },
 
-    characters: { collection: 'character' },
+    characters: { collection: 'character', via: 'fleets' },
 
-    engagements: { collection: 'engagement' },
+    // engagements: { collection: 'engagement' },
 
-    kills: { collection: 'kill' }
+    kills: { collection: 'kill', via: 'fleet' }
 
   },
 

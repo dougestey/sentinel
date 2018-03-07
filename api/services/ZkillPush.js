@@ -33,8 +33,7 @@ module.exports = {
           return resolve();
 
         if (_shouldTrack(decodedResponse.package))
-          ZkillResolve.kill(decodedResponse.package);
-          // Dispatcher.processKill(createdKill);
+          await ZkillResolve.kill(decodedResponse.package);
 
         return resolve();
       });

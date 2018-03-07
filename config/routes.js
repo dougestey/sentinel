@@ -10,6 +10,6 @@
 
 module.exports.routes = {
 
-  'GET /api/tracker/systems/:systemId' : 'SystemController.findOne'
+  'GET /api/tracker/systems/:systemId' : 'SystemController.track'
 
 };

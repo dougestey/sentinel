@@ -28,8 +28,11 @@ module.exports = {
     // Check for local record. If it exists, cancel further logic.
     let existingRecord = await Kill.find({ killId });
 
-    if (existingRecord.length)
+    if (existingRecord.length || !characterId)
       return;
+
+    console.log('=================');
+    console.log(`killID ${killId}`);
 
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
@@ -42,22 +45,21 @@ module.exports = {
       ship,
       victim,
       system
-    }).fetch();
+    })
+    .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a kill that already exists. ${e}`) })
+    .fetch();
 
-    // Notify WebSockets
-    let room = System.getRoomName(system);
-
-    sails.io.sockets.in.room.clients((err, members) => {
-      members.map(async(socketId) => {
-        let data = kill;
-
-        // Pipe it down to the client
-        sails.sockets.broadcast(socketId, 'kill', data);
-      });
-    });
-
+    // We don't track Sansha, and he doesn't track us.
     if (!package.zkb.npc)
-      Identifier.fleet(package.killmail, system, kill);
+      await Identifier.fleet(package.killmail, system, kill);
+
+    kill = await Kill.findOne(kill.id)
+      .populate('ship')
+      .populate('victim')
+      .populate('system')
+      .populate('fleet');
+
+    Dispatcher.notifySockets(kill, 'kill', system);
 
     return kill;
   }
