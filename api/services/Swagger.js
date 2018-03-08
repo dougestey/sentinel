@@ -5,8 +5,7 @@
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
-let ESI = require('eve-swagger-simple'),
-    request = require('request'),
+let ESI = require('eve-swagger-simple')
     qs = require('qs');
 
 module.exports = {
@@ -39,13 +38,14 @@ module.exports = {
         alliance_id: allianceId
       } = await ESI.request(`/characters/${characterId}`);
 
-      let alliance = await Swagger.alliance(allianceId);
-
-      let corporation = await Swagger.corporation(corporationId, alliance);
+      let alliance = await Swagger.alliance(allianceId),
+          corporation = await Swagger.corporation(corporationId, alliance),
+          lastEsiUpdate = new Date().toISOString();
 
       localCharacter = await Character.create({
         characterId,
         name,
+        lastEsiUpdate,
         corporation: corporation ? corporation.id : null,
         alliance: alliance ? alliance.id : null
       })

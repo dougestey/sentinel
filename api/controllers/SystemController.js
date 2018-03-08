@@ -7,22 +7,30 @@
 
 module.exports = {
 
-  async findOne(req, res) {
+  async track(req, res) {
     if (!req.params.systemId)
       return res.badRequest();
 
-    let system = await System.findOne({ systemId: req.params.systemId })
-      .populate('fleets')
-      .populate('kills');
+    let { systemId } = req.params;
+
+    let system = await System.findOne({ systemId });
 
     if (!system)
       return res.notFound();
 
+    let fleets = await Fleet.find({ system: system.id })
+      .populate('characters')
+      .sort('lastSeen DESC');
+
+    let kills = await Kill.find({ system: system.id })
+      .populate('ship')
+      .populate('victim')
+      .sort('time DESC')
+      .limit(10);
+
     if (req.isSocket) {
       System.subscribe(req, [system.id]);
     }
-
-    let { fleets, kills } = system;
 
     return res.status(200).json({ systemId, fleets, kills });
   }

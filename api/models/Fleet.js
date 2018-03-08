@@ -39,7 +39,7 @@ module.exports = {
 
     system: { model: 'system' },
 
-    characters: { collection: 'character', via: 'fleets' },
+    characters: { collection: 'character', via: 'fleet' },
 
     // engagements: { collection: 'engagement' },
 

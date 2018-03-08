@@ -1,9 +1,10 @@
-const everyFiveMinutes = 1000 * 60 * 5;
+const everyMinute = 1000 * 60;
+const everyFiveMinutes = everyMinute * 5;
 
 let SwaggerJobs = {
 
   kickoff() {
-  }
+  },
 
 };
 

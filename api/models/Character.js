@@ -21,7 +21,7 @@ module.exports = {
 
     alliance: { model: 'alliance' },
 
-    fleets: { collection: 'fleet', via: 'characters' },
+    fleet: { model: 'fleet' },
 
     // Meta
 

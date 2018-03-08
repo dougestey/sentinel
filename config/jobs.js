@@ -6,10 +6,10 @@
  *
  */
 
-var kue = require('kue'),
+let kue = require('kue'),
     moment = require('moment');
 
-var jobs = kue.createQueue({
+let jobs = kue.createQueue({
       prefix: 'kue',
       redis: {
         host: '127.0.0.1',
@@ -18,6 +18,8 @@ var jobs = kue.createQueue({
       },
       disableSearch: true
     });
+
+let ZkillJobs = require('../jobs/ZkillJobs');
 
 // ui for jobs
 kue.app.listen(6564);
@@ -32,23 +34,7 @@ process.once('SIGTERM', function() {
 
 function init() {
 
-  jobs.process('read_kill_stream', (job, done) => {
-    ZkillPush.fetch()
-      .then((result) => {
-        if (result && result instanceof Error) {
-          done(result);
-        } else {
-          done(null, result);
-        }
-
-        // Keep movin' buddy, these kills ain't gonna track themselves.
-        require('../jobs/ZkillJobs').readKillStream();
-      }, (error) => {
-        done(error);
-
-        require('../jobs/ZkillJobs').readKillStream();
-      });
-  });
+  // Fleet
 
   jobs.process('determine_fleet_health', (job, done) => {
     Fleet.find({ isActive: true })
@@ -62,6 +48,60 @@ function init() {
           if (Math.abs(diff) > 30)
             await Fleet.update(fleet.id, { isActive: false, endTime: fleet.lastSeen });
         });
+
+        done(null);
+      })
+  });
+
+  jobs.process('determine_fleet_threat_level', (job, done) => {
+    Fleet.find({ isActive: true })
+      .populate('characters')
+      .then(async(fleets) => {
+        for (let fleet of fleets) {
+          let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id });
+
+          await Fleet.update(fleet.id, { dangerRatio });
+        }
+
+        done(null);
+      })
+  });
+
+  // Zkill
+
+  jobs.process('read_kill_stream', (job, done) => {
+    ZkillPush.fetch()
+      .then((result) => {
+        if (result && result instanceof Error) {
+          done(result);
+        } else {
+          done(null, result);
+        }
+
+        // Keep movin' buddy, these kills ain't gonna track themselves.
+        // setTimeout(ZkillJobs.readKillStream, 1000);
+        ZkillJobs.readKillStream();
+      }, (error) => {
+        done(error);
+
+        ZkillJobs.readKillStream();
+        // setTimeout(ZkillJobs.readKillStream, 1000);
+      });
+  });
+
+  jobs.process('update_danger_ratios', (job, done) => {
+    Character.find({ dangerRatio: 0, lastZkillUpdate: '' })
+      .limit(10)
+      .then((characters) => {
+        for (let character of characters) {
+          ZkillStats.character(character.characterId)
+            .then(async(stats) => {
+              let { dangerRatio } = stats,
+                  lastZkillUpdate = new Date().toISOString();
+
+              await Character.update(character.id, { dangerRatio, lastZkillUpdate });
+            });          
+        }
 
         done(null);
       })
