@@ -45,8 +45,8 @@ function init() {
 
           let diff = now.diff(lastSeen, 'minutes');
 
-          if (Math.abs(diff) > 30)
-            await Fleet.update(fleet.id, { isActive: false, endTime: fleet.lastSeen });
+          if (Math.abs(diff) > parseInt(process.env.FLEET_EXPIRY_IN_MINUTES))
+            await Fleet.update(fleet.id, { isActive: false, endTime: new Date().toISOString() });
         });
 
         done(null);
