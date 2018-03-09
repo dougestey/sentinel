@@ -5,7 +5,8 @@
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
-let ESI = require('eve-swagger-simple')
+let ESI = require('eve-swagger-simple'),
+    request = require('request'),
     qs = require('qs');
 
 module.exports = {
@@ -21,8 +22,26 @@ module.exports = {
     return resolvedSystems;
   },
 
+  // POSTing in eve-swagger-simple is absolute shit, so we use request.
   async names(ids) {
-    return ESI.request('/universe/names', { ids });
+    return new Promise((resolve, reject) => {
+      request.post('https://esi.tech.ccp.is/latest/universe/names/',
+        {
+          json: true,
+          body: ids
+        }
+      , (error, response, body) => {
+        if (error) {
+          console.log(error);
+          reject(error);
+        }
+
+        if (!body)
+          return reject();
+
+        resolve(body);
+      });
+    });
   },
 
   async character(characterId) {

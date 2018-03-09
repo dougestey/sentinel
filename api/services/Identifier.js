@@ -5,6 +5,8 @@
  * @help        :: See https://next.sailsjs.com/documentation/concepts/services
  */
 
+// TODO: Resolve nearest celestial
+
 let _resolveCharacters = async(ids) => {
   let resolved = [];
 
@@ -18,15 +20,32 @@ let _resolveCharacters = async(ids) => {
   return _.compact(resolved);
 };
 
+let _resolveComposition = async(typeHash) => {
+  let composition = await Swagger.names(_.map(_.keys(typeHash), (key) => parseInt(key)));
+
+  composition = composition.map((shipType) => {
+    shipType.quantity = typeHash[shipType.id];
+    shipType.typeId = shipType.id;
+    delete shipType.category;
+    delete shipType.id;
+
+    return shipType;
+  });
+
+  return composition;
+};
+
 let _createFleet = async(killmail, kill, system) => {
   console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
 
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
-      composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id)),
+      compositionIds = _.countBy(killmail.attackers.map((a) => a.ship_type_id)),
       configuration = 'unknown',
       isActive = true;
+
+  let composition = await _resolveComposition(compositionIds);
 
   let fleet = await Fleet.create({
     startTime,
@@ -66,13 +85,25 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  // If this is the newest kill for the fleet, update the fleet attrs.
-  if (fleet.lastSeen < time) {
-    let lastSeen = time,
-        composition = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
+  let composition, lastSeen;
 
-    await Fleet.update({ id: fleet.id }, { lastSeen, composition, system });
+  // If this is the newest kill for the fleet, update the fleet's last seen time.
+  if (fleet.lastSeen < time) {
+    lastSeen = time;
+  } else {
+    lastSeen = fleet.lastSeen;
   }
+
+  // TODO
+  // if (fleet.characters.length < killmail.attackers.length) {
+  //   let compositionIds = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
+
+  //   composition = await _resolveComposition(compositionIds);
+  // } else {
+  //   composition = fleet.composition;
+  // }
+
+  await Fleet.update({ id: fleet.id }, { lastSeen, composition, system });
 
   fleet = await Fleet.findOne(fleet.id)
     .populate('system')
