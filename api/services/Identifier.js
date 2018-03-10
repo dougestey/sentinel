@@ -27,7 +27,7 @@ let _resolveComposition = async(typeHash) => {
   console.log('Resolving comp', ids);
   console.log(composition);
 
-  if (composition.length) {
+  if (composition && composition.length) {
     composition = composition.map(({ id: typeId, name }) => {
       return { typeId, name, quantity: typeHash[typeId] };
     });

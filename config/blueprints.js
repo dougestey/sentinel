@@ -17,8 +17,7 @@ module.exports.blueprints = {
   *                                                                          *
   ***************************************************************************/
 
-  // actions: false,
-
+  actions: true,
 
   /***************************************************************************
   *                                                                          *
@@ -28,7 +27,7 @@ module.exports.blueprints = {
 
   // rest: true,
 
-  prefix: '/api',
+  prefix: '/api/sentinel',
 
   pluralize: true
 
