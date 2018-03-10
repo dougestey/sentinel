@@ -1,7 +1,7 @@
 /**
- * Fuzzwork
+ * Fuzzworks
  *
- * @description :: Tools from Fuzzwork.
+ * @description :: Tools from Fuzzworks.
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 

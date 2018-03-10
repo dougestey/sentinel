@@ -1,9 +1,8 @@
-var redis = require('redis');
-var url = require('url');
-var redisUrl = url.parse('redis://user:@localhost:6666/');
+let redis = require('redis'),
+    redisUrl = 'redis://localhost:6666/';
 
-var db = redis.createClient();
+let db = redis.createClient(redisUrl);
 
-db.flushall();
+db.flushdb();
 
 module.exports.redis = db;

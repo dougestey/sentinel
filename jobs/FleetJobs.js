@@ -1,11 +1,12 @@
 const everyMinute = 1000 * 60;
 const everyFiveMinutes = everyMinute * 5;
+const everyThirtySeconds = everyMinute / 2;
 
 let FleetJobs = {
 
   kickoff() {
     setInterval(this.determineFleetHealth, everyFiveMinutes);
-    setInterval(this.determineFleetThreatLevel, everyMinute);
+    setInterval(this.determineFleetThreatLevel, everyThirtySeconds);
   },
 
   determineFleetHealth() {

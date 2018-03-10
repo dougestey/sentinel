@@ -24,6 +24,9 @@ module.exports = {
 
   // POSTing in eve-swagger-simple is absolute shit, so we use request.
   async names(ids) {
+    if (!ids.length)
+      return;
+
     return new Promise((resolve, reject) => {
       request.post('https://esi.tech.ccp.is/latest/universe/names/',
         {
@@ -68,7 +71,7 @@ module.exports = {
         corporation: corporation ? corporation.id : null,
         alliance: alliance ? alliance.id : null
       })
-      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a character that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a character that already exists. ${e}`) })
       .fetch();
     }
 
@@ -88,7 +91,7 @@ module.exports = {
         typeId,
         name
       })
-      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a type that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a type that already exists. ${e}`); })
       .fetch();
     }
 
@@ -106,7 +109,7 @@ module.exports = {
 
     // TODO: Improve this check
     if (!localSystem.name) {
-      let system = await ESI.request(`/universe/systems/${systemId}`), constellation, star;
+      let system = await ESI.request(`/universe/systems/${systemId}`);
 
       localSystem = await System.update({ systemId }, {
         name: system.name,
@@ -119,6 +122,25 @@ module.exports = {
     }
 
     return localSystem;
+  },
+
+  async stargate(stargateId) {
+    if (!stargateId)
+      return;
+
+    let localStargate = await Stargate.findOne({ stargateId });
+
+    // TODO: Improve this check
+    if (!localStargate) {
+      let stargate = await ESI.request(`/universe/stargates/${stargateId}`);
+
+      localStargate = await Stargate.create({
+        stargateId: stargate.stargate_id,
+        name: stargate.name
+      }).fetch();
+    }
+
+    return localStargate;
   },
 
   async corporation(corporationId, allianceRecord) {
@@ -140,7 +162,7 @@ module.exports = {
         memberCount,
         alliance: allianceRecord ? allianceRecord.id : null
       })
-      .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a corp that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a corp that already exists. ${e}`) })
       .fetch();
     }
 
@@ -158,7 +180,7 @@ module.exports = {
 
       if (!localAlliance) {
         localAlliance = await Alliance.create({ allianceId, name, ticker })
-        .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create an alliance that already exists. ${e}`) })
+        .intercept('E_UNIQUE', (e) => { console.log(`Tried to create an alliance that already exists. ${e}`) })
         .fetch();
       } else {
         localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();

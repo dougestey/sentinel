@@ -1,5 +1,6 @@
 const everyMinute = 1000 * 60;
 const everyFiveMinutes = everyMinute * 5;
+const everyThirtySeconds = everyMinute / 2;
 
 let ZkillJobs = {
 
@@ -7,7 +8,7 @@ let ZkillJobs = {
     this.readKillStream();
     this.updateDangerRatios();
 
-    setInterval(this.updateDangerRatios, everyMinute);
+    setInterval(this.updateDangerRatios, everyThirtySeconds);
   },
 
   readKillStream() {

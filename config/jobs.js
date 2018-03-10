@@ -58,7 +58,7 @@ function init() {
       .populate('characters')
       .then(async(fleets) => {
         for (let fleet of fleets) {
-          let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id });
+          let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id, dangerRatio: { '>' : 0 } });
 
           await Fleet.update(fleet.id, { dangerRatio });
         }
@@ -79,13 +79,7 @@ function init() {
         }
 
         // Keep movin' buddy, these kills ain't gonna track themselves.
-        // setTimeout(ZkillJobs.readKillStream, 1000);
-        ZkillJobs.readKillStream();
-      }, (error) => {
-        done(error);
-
-        ZkillJobs.readKillStream();
-        // setTimeout(ZkillJobs.readKillStream, 1000);
+        setTimeout(ZkillJobs.readKillStream, 500);
       });
   });
 
