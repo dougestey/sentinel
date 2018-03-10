@@ -5,6 +5,8 @@
  * @help        :: See https://next.sailsjs.com/documentation/concepts/services
  */
 
+// TODO: Resolve nearest celestial
+
 let _resolveCharacters = async(ids) => {
   let resolved = [];
 
