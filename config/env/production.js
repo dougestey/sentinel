@@ -203,16 +203,16 @@ module.exports = {
     * > Be sure to use the right protocol!  ("http://" vs. "https://")         *
     *                                                                          *
     ***************************************************************************/
-    onlyAllowOrigins: [
-       'http://127.0.0.1',
-       'http://127.0.0.1:8080',
-       'http://staging',
-       'http://staging:8080',
-       'http://gloss.space',
-       'http://gloss.space:8080',
-       'http://localhost',
-       'http://localhost:8080'
-    ],
+    // onlyAllowOrigins: [
+    //    'http://127.0.0.1',
+    //    'http://127.0.0.1:8080',
+    //    'http://staging',
+    //    'http://staging:8080',
+    //    'http://gloss.space',
+    //    'http://gloss.space:8080',
+    //    'http://localhost',
+    //    'http://localhost:8080'
+    // ],
 
 
     /***************************************************************************
@@ -249,7 +249,7 @@ module.exports = {
   *                                                                         *
   ***************************************************************************/
   log: {
-    level: 'debug'
+    level: 'silent'
   },
 
   http: {

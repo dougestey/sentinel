@@ -31,8 +31,8 @@ module.exports = {
     if (existingRecord.length || !characterId)
       return;
 
-    console.log('=================');
-    console.log(`killID ${killId}`);
+    // console.log('=================');
+    // console.log(`killID ${killId}`);
 
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
@@ -60,8 +60,6 @@ module.exports = {
       .populate('fleet');
 
     Dispatcher.notifySockets(kill, 'kill', system);
-
-    return kill;
   }
 
 };

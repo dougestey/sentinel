@@ -20,6 +20,16 @@ module.exports.session = {
   ***************************************************************************/
   secret: '2fbd695a26b9308ab4ad8d342eb9ef4a',
 
+  /***************************************************************************
+  *                                                                          *
+  * Uncomment the following lines to set up a Redis session store that can   *
+  * be shared across multiple Sails.js servers.                              *
+  *                                                                          *
+  * Requires connect-redis (https://www.npmjs.com/package/connect-redis)     *
+  *                                                                          *
+  ***************************************************************************/
+
+  adapter: 'redis',
 
   /***************************************************************************
   *                                                                          *

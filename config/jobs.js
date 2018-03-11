@@ -79,7 +79,7 @@ function init() {
         }
 
         // Keep movin' buddy, these kills ain't gonna track themselves.
-        setTimeout(ZkillJobs.readKillStream, 500);
+        setTimeout(ZkillJobs.readKillStream, 1000);
       });
   });
 

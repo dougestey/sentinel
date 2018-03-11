@@ -24,8 +24,8 @@ let _resolveComposition = async(typeHash) => {
   let ids = _.compact(_.map(_.keys(typeHash), (key) => parseInt(key))),
       composition = await Swagger.names(ids);
 
-  console.log('Resolving comp', ids);
-  console.log(composition);
+  // console.log('Resolving comp', ids);
+  // console.log(composition);
 
   if (composition && composition.length) {
     composition = composition.map(({ id: typeId, name }) => {
@@ -37,7 +37,7 @@ let _resolveComposition = async(typeHash) => {
 };
 
 let _createFleet = async(killmail, kill, system) => {
-  console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
+  // console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
 
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
@@ -70,7 +70,7 @@ let _createFleet = async(killmail, kill, system) => {
 
   Dispatcher.notifySockets(fleet, 'fleet', system);
 
-  console.log(`Created new fleet ${fleet.id}`);
+  // console.log(`Created new fleet ${fleet.id}`);
 
   return fleet;
 };
@@ -110,13 +110,13 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
 
   Dispatcher.notifySockets(fleet, 'fleet', system);
 
-  console.log(`Fleet ${fleet.id} got a new kill!`);
+  // console.log(`Fleet ${fleet.id} got a new kill!`);
 
   return fleet;
 };
 
 let _mergeFleets = async(fleets) => {
-  console.log(`Merging fleets...`);
+  // console.log(`Merging fleets...`);
 
   // Record to merge into has already been determined in Identifier.fleet
   let record = _.first(fleets),
@@ -173,13 +173,13 @@ let Identifier = {
 
     scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
 
-    console.log(scoredFleets);
+    // console.log(scoredFleets);
 
     // 1 is the worst possible score (no matches) while 0 is the best (all matched)
     let bestMatch = _.first(scoredFleets), fleet;
 
     if (bestMatch) {
-      console.log(`Match for kill ${killmail.killmail_id} scored at ${(Math.abs(bestMatch.score - 1) * 100).toFixed(2)}%`);
+      // console.log(`Match for kill ${killmail.killmail_id} scored at ${(Math.abs(bestMatch.score - 1) * 100).toFixed(2)}%`);
 
       fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 

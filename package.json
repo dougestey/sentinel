@@ -6,7 +6,7 @@
   "keywords": [],
   "dependencies": {
     "async": "2.0.1",
-    "connect-redis": "3.2.0",
+    "connect-redis": "^3.3.3",
     "dotenv-safe": "^5.0.1",
     "eve-swagger-simple": "^1.1.0",
     "grunt": "1.0.1",
