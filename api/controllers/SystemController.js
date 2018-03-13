@@ -119,7 +119,7 @@ module.exports = {
 
     // Subscribe sockets to future system updates.
     if (req.isSocket) {
-      System.subscribe(req, [system.id]);
+      Dispatcher.joinPool(req);
     }
 
     return res.status(200).json({ systemId, system, fleets, kills: resolvedKills });
