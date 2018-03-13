@@ -26,6 +26,31 @@ let _resolveNearestCelestial = async(position, systemId) => {
   return itemName ? itemName : 'Unknown';
 };
 
+let _resolveComposition = async(ids, characters) => {
+
+  // ids: [] of pilots, each one containing `character_id` and `ship_type_id`
+  // characters: [] of character records
+
+  let shipTypeIds = [];
+
+  // Strip hash into [] for Swagger.names
+  _.forEach(ids, (shipTypeId) => {
+    shipTypeIds.push(shipTypeId);
+  });
+
+  let resolvedShipTypes = await Swagger.names(_.uniq(shipTypeIds));
+
+  _.forEach(ids, (shipTypeId, characterId) => {
+    let charIndex = _.findIndex(characters, 'characterId', parseInt(characterId)),
+        shipIndex = _.findIndex(resolvedShipTypes, 'id', shipTypeId);
+
+    if (charIndex !== -1)
+      characters[charIndex].ship = resolvedShipTypes[shipIndex];
+  });
+
+  return characters;
+};
+
 module.exports = {
 
   async track(req, res) {
@@ -67,6 +92,7 @@ module.exports = {
     }
 
     // Flesh out useful corp/alliance data for chars.
+    // Also resolve shiptypes.
     for (let fleet of fleets) {
       let resolvedChars = [];
 
@@ -85,7 +111,10 @@ module.exports = {
 
       await Promise.all(resolvedChars);
 
-      fleet.characters = resolvedChars;
+      // Now let's resolve the ship type IDs for each character.
+      let resolvedCharsWithShips = await _resolveComposition(fleet.composition, resolvedChars);
+
+      fleet.characters = resolvedCharsWithShips;
     }
 
     // Subscribe sockets to future system updates.

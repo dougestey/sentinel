@@ -20,33 +20,20 @@ let _resolveCharacters = async(ids) => {
   return _.compact(resolved);
 };
 
-let _resolveComposition = async(typeHash) => {
-  let ids = _.compact(_.map(_.keys(typeHash), (key) => parseInt(key))),
-      composition = await Swagger.names(ids);
-
-  // console.log('Resolving comp', ids);
-  // console.log(composition);
-
-  if (composition && composition.length) {
-    composition = composition.map(({ id: typeId, name }) => {
-      return { typeId, name, quantity: typeHash[typeId] };
-    });
-  }
-
-  return composition;
-};
-
 let _createFleet = async(killmail, kill, system) => {
   // console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
 
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
-      typeHash = _.countBy(killmail.attackers.map((a) => a.ship_type_id)),
+      composition = {},
       configuration = 'unknown',
       isActive = true;
 
-  let composition = await _resolveComposition(typeHash);
+  _.forEach(killmail.attackers, ({ character_id, ship_type_id }) => {
+    if (character_id !== undefined)
+      composition[character_id] = ship_type_id;
+  });
 
   let fleet = await Fleet.create({
     startTime,
@@ -87,18 +74,19 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  let composition, lastSeen;
+  let composition = {}, lastSeen;
 
   // If this is the newest kill for the fleet, update the fleet's last seen time.
   if (fleet.lastSeen < time) {
     lastSeen = time;
   }
 
-  if (fleet.composition.length < killmail.attackers.length) {
-    let typeHash = _.countBy(killmail.attackers.map((a) => a.ship_type_id));
+  _.forEach(killmail.attackers, ({ character_id, ship_type_id }) => {
+    if (character_id === undefined || (fleet.composition[character_id] && time < fleet.lastSeen))
+      return;
 
-    composition = await _resolveComposition(typeHash);
-  }
+    composition[character_id] = ship_type_id;
+  });
 
   await Fleet.update({ id: fleet.id }, { lastSeen, composition, system });
 
@@ -118,7 +106,7 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
 let _mergeFleets = async(fleets) => {
   // console.log(`Merging fleets...`);
 
-  // Record to merge into has already been determined in Identifier.fleet
+  // Record to merge into has already been sorted to top in Identifier.fleet
   let record = _.first(fleets),
       characters = [];
 
@@ -131,6 +119,13 @@ let _mergeFleets = async(fleets) => {
     if (fleet.lastSeen > record.lastSeen)
       record.lastSeen = fleet.lastSeen;
 
+    _.forEach(fleet.composition, (shipTypeId, characterId) => {
+      if (record.composition[characterId] && fleet.lastSeen < record.lastSeen)
+        return;
+
+      record.composition[characterId] = shipTypeId;
+    });
+
     if (fleet.id !== record.id)
       await Fleet.destroy({ id: fleet.id });
   }
@@ -139,10 +134,11 @@ let _mergeFleets = async(fleets) => {
 
   await Fleet.replaceCollection(record.id, 'characters').members(characters);
 
-  let { startTime, lastSeen } = record,
-      updated = await Fleet.update(record.id, { startTime, lastSeen }).fetch(),
+  let { startTime, lastSeen, composition } = record,
+      updated = await Fleet.update(record.id, { startTime, lastSeen, composition }).fetch(),
       fleet = _.first(updated);
 
+  // To avoid another lookup
   fleet.characters = characters;
 
   return fleet;
