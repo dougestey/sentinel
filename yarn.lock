@@ -1481,9 +1481,9 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
 
-eve-swagger-simple@^1.1.0:
+"eve-swagger-simple@https://github.com/dougestey/eve-swagger-simple":
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/eve-swagger-simple/-/eve-swagger-simple-1.1.0.tgz#198ef628f85c2a4861634ee45b4f19e127db1dc1"
+  resolved "https://github.com/dougestey/eve-swagger-simple#7323381891c191f33b20dde760228b7937d2ae6a"
   dependencies:
     request "^2.81.0"
 

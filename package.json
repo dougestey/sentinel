@@ -7,7 +7,7 @@
   "dependencies": {
     "async": "2.0.1",
     "dotenv-safe": "^5.0.1",
-    "eve-swagger-simple": "^1.1.0",
+    "eve-swagger-simple": "https://github.com/dougestey/eve-swagger-simple",
     "grunt": "1.0.1",
     "kue": "^0.11.6",
     "lodash": "3.10.1",
