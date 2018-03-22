@@ -15,18 +15,18 @@ module.exports = {
         url: `https://www.fuzzwork.co.uk/api/nearestCelestial.php?x=${x}&y=${y}&z=${z}&solarsystemid=${systemId}`,
         method: 'GET',
         headers: {
-          'User-Agent': 'http://gloss.space'
+          'User-Agent': 'https://gloss.space'
         }
       }, (error, response, body) => {
-        if (error) {
-          console.log(error);
-          reject(error);
+        if (error || !body) {
+          sails.log.error(`[Fuzzworks.nearestCelestial] ${response.statusCode} ${error}`);
+          return reject();
         }
 
-        if (!body)
-          return reject();
+        sails.log.debug(`[Fuzzworks.nearestCelestial] Success.`);
+        sails.log.silly(`[Fuzzworks.nearestCelestial] ${body}`);
 
-        resolve(JSON.parse(body));
+        return resolve(body);
       });
     });
   }

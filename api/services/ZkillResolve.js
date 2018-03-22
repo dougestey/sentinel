@@ -26,13 +26,13 @@ module.exports = {
     } = killmail;
 
     // Check for local record. If it exists, cancel further logic.
-    let existingRecord = await Kill.find({ killId });
+    let existingRecord = await Kill.findOne({ killId });
 
-    if (existingRecord.length || !characterId)
+    if (existingRecord || !characterId || !shipTypeId || !systemId) {
+      sails.log.debug(`[ZkillResolve.kill] Existing record: ${existingRecord} || characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
+      sails.log.debug('[ZkillResolve.kill] Cancelling resolve.');
       return;
-
-    // console.log('=================');
-    // console.log(`killID ${killId}`);
+    }
 
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
@@ -46,7 +46,7 @@ module.exports = {
       victim,
       system
     })
-    .intercept('E_UNIQUE', (e) => { return new Error(`Tried to create a kill that already exists. ${e}`) })
+    .intercept('E_UNIQUE', (e) => { return sails.log.error(`[ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`) })
     .fetch();
 
     // We don't track Sansha, and he doesn't track us.

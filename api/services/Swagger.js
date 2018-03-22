@@ -35,7 +35,7 @@ module.exports = {
         }
       , (error, response, body) => {
         if (error) {
-          console.log(error);
+          sails.log.error(`[Swagger.names] ${error}`);
           reject(error);
         }
 
@@ -71,7 +71,7 @@ module.exports = {
         corporation: corporation ? corporation.id : null,
         alliance: alliance ? alliance.id : null
       })
-      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a character that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.character] Race condition: Tried to create a character that already exists. ${e}`) })
       .fetch();
     }
 
@@ -91,7 +91,7 @@ module.exports = {
         typeId,
         name
       })
-      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a type that already exists. ${e}`); })
+      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.type] Race condition: Tried to create a type that already exists. ${e}`) })
       .fetch();
     }
 
@@ -162,7 +162,7 @@ module.exports = {
         memberCount,
         alliance: allianceRecord ? allianceRecord.id : null
       })
-      .intercept('E_UNIQUE', (e) => { console.log(`Tried to create a corp that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.corporation] Race condition: Tried to create a corporation that already exists. ${e}`) })
       .fetch();
     }
 
@@ -180,7 +180,7 @@ module.exports = {
 
       if (!localAlliance) {
         localAlliance = await Alliance.create({ allianceId, name, ticker })
-        .intercept('E_UNIQUE', (e) => { console.log(`Tried to create an alliance that already exists. ${e}`) })
+        .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`) })
         .fetch();
       } else {
         localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();

@@ -15,19 +15,17 @@ module.exports = {
         url: `https://zkillboard.com/api/stats/characterID/${characterId}/`,
         method: 'GET',
         headers: {
-          'User-Agent': 'http://gloss.space'
+          'User-Agent': 'https://gloss.space'
         },
+        json: true,
         gzip: true
       }, (error, response, body) => {
-        if (error) {
-          console.log(error);
-          reject(error);
+        if (error || !body) {
+          sails.log.error(`[ZkillStats.character] ${response.statusCode} ${error}`);
+          return reject();
         }
 
-        if (!body)
-          return reject();
-
-        resolve(JSON.parse(body));
+        return resolve(body);
       });
     });
   }

@@ -5,15 +5,13 @@
  * @help        :: See https://next.sailsjs.com/documentation/concepts/services
  */
 
-// TODO: Resolve nearest celestial
-
 let _resolveCharacters = async(ids) => {
   let resolved = [];
 
   for (let characterId of ids) {
     let character = await Swagger.character(characterId);
 
-    if (character)
+    if (character && character.id)
       resolved.push(character.id);
   }
 
@@ -21,8 +19,6 @@ let _resolveCharacters = async(ids) => {
 };
 
 let _createFleet = async(killmail, kill, system) => {
-  // console.log(`Creating new fleet for kill ${killmail.killmail_id}`);
-
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
@@ -57,14 +53,12 @@ let _createFleet = async(killmail, kill, system) => {
 
   Dispatcher.notifySockets(fleet, 'fleet', system);
 
-  // console.log(`Created new fleet ${fleet.id}`);
-
   return fleet;
 };
 
 let _updateFleet = async(killmail, kill, system, fleet) => {
   if (!fleet) {
-    return new Error('No fleet to update');
+    return sails.log.error('[Identifier._updateFleet] No fleet to update');
   }
 
   let { time } = kill;
@@ -98,14 +92,10 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
 
   Dispatcher.notifySockets(fleet, 'fleet', system);
 
-  // console.log(`Fleet ${fleet.id} got a new kill!`);
-
   return fleet;
 };
 
 let _mergeFleets = async(fleets) => {
-  // console.log(`Merging fleets...`);
-
   // Record to merge into has already been sorted to top in Identifier.fleet
   let record = _.first(fleets),
       characters = [];
@@ -169,14 +159,10 @@ let Identifier = {
 
     scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
 
-    // console.log(scoredFleets);
-
     // 1 is the worst possible score (no matches) while 0 is the best (all matched)
     let bestMatch = _.first(scoredFleets), fleet;
 
     if (bestMatch) {
-      // console.log(`Match for kill ${killmail.killmail_id} scored at ${(Math.abs(bestMatch.score - 1) * 100).toFixed(2)}%`);
-
       fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 
       if (!fleet) {

@@ -16,7 +16,7 @@ let _resolveNearestCelestial = async(position, systemId) => {
   if (!itemName) {
     let type = await Swagger.type(typeId);
 
-    if (type.name.indexOf('Stargate') !== -1) {
+    if (type && type.name && type.name.indexOf('Stargate') !== -1) {
       let { name } = await Swagger.stargate(itemId);
 
       itemName = name;
