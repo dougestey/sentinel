@@ -39,11 +39,11 @@ module.exports = {
         // This await is important. We can't process kills in parallel because of race
         // conditions that could occur when creating new corp/character records etc.
         if (_shouldTrack(body.package)) {
-          sails.log.debug(`[ZkillPush.fetch] Have a package, sending to resolve.`);
+          sails.log.debug(`[ZkillPush.fetch] Have a package for kill ${body.package.killID}, sending to resolve.`);
 
           await ZkillResolve.kill(body.package);
         } else {
-          sails.log.debug(`[ZkillPush.fetch] Nothing from Zkill this time.`);
+          sails.log.debug(`[ZkillPush.fetch] Ignoring NPC kill.`);
         }
 
         return resolve();

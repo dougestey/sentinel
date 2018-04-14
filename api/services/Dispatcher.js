@@ -28,10 +28,8 @@ let Dispatcher = {
   },
 
   // Notify connected sockets of new data
-  notifySockets(data, type, system) {
+  notifySockets(data, type) {
     sails.io.sockets.in('activeSockets').clients((err, members) => {
-      sails.log.debug(`[Dispatcher.notifySockets] ${members.length} members in the pool.`);
-
       members.map((socketId) => {
         sails.log.debug(`[Dispatcher.notifySockets] Notifying ${socketId} of ${type}...`);
         sails.log.silly(`[Dispatcher.notifySockets] ${data}`);

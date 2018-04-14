@@ -21,6 +21,11 @@ module.exports = {
         gzip: true
       }, (error, response, body) => {
         if (error || !body) {
+          if (!response) {
+            sails.log.error(`[ZkillStats.character] No response at all.`);
+            return reject();
+          }
+
           sails.log.error(`[ZkillStats.character] ${response.statusCode} ${error}`);
           return reject();
         }

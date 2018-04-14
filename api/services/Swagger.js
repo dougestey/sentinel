@@ -180,8 +180,8 @@ module.exports = {
 
       if (!localAlliance) {
         localAlliance = await Alliance.create({ allianceId, name, ticker })
-        .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`) })
-        .fetch();
+          .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`) })
+          .fetch();
       } else {
         localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();
         localAlliance = _.first(localAlliance);

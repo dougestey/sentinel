@@ -16,7 +16,8 @@ module.exports = {
         method: 'GET',
         headers: {
           'User-Agent': 'https://gloss.space'
-        }
+        },
+        json: true
       }, (error, response, body) => {
         if (error || !body) {
           sails.log.error(`[Fuzzworks.nearestCelestial] ${response.statusCode} ${error}`);

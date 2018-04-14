@@ -29,19 +29,21 @@ module.exports = {
     let existingRecord = await Kill.findOne({ killId });
 
     if (existingRecord || !characterId || !shipTypeId || !systemId) {
-      sails.log.debug(`[ZkillResolve.kill] Existing record: ${existingRecord} || characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
+      sails.log.debug(`[ZkillResolve.kill] Issue with record: ${existingRecord} || characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
       sails.log.debug('[ZkillResolve.kill] Cancelling resolve.');
       return;
     }
 
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
-        { id: system } = await Swagger.system(systemId);
+        { id: system } = await Swagger.system(systemId),
+        positionName = await Resolver.nearestCelestial(position, systemId);
 
     let kill = await Kill.create({
       killId,
       time,
       position,
+      positionName,
       ship,
       victim,
       system
@@ -59,7 +61,7 @@ module.exports = {
       .populate('system')
       .populate('fleet');
 
-    Dispatcher.notifySockets(kill, 'kill', system);
+    Dispatcher.notifySockets(kill, 'kill');
   }
 
 };

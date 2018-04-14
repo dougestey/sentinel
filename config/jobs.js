@@ -87,6 +87,11 @@ function init() {
     Character.find({ dangerRatio: 0, lastZkillUpdate: '' })
       .limit(10)
       .then((characters) => {
+        if (characters && characters instanceof Error) {
+          sails.log.error(`[Job.update_danger_ratios] ${characters}`);
+          done(characters);
+        }
+
         for (let character of characters) {
           ZkillStats.character(character.characterId)
             .then(async(stats) => {
@@ -94,7 +99,10 @@ function init() {
                   lastZkillUpdate = new Date().toISOString();
 
               await Character.update(character.id, { dangerRatio, lastZkillUpdate });
-            });          
+            })
+            .catch((error) => {
+              sails.log.error(`[Job.update_danger_ratios] ${error}`);
+            });
         }
 
         done(null);

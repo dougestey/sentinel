@@ -8,17 +8,29 @@
 let _resolveCharacters = async(ids) => {
   let resolved = [];
 
+  sails.log.debug('[Identifier._resolveCharacters] Begin');
+
   for (let characterId of ids) {
-    let character = await Swagger.character(characterId);
+    let character;
+
+    try {
+      character = await Swagger.character(characterId);
+    } catch(e) {
+      sails.log.error(`[Identifier._resolveCharacters] ${JSON.stringify(e)}`);
+    }
 
     if (character && character.id)
       resolved.push(character.id);
   }
 
+  sails.log.debug('[Identifier._resolveCharacters] End');
+
   return _.compact(resolved);
 };
 
 let _createFleet = async(killmail, kill, system) => {
+  sails.log.debug('[Identifier._createFleet] Begin');
+
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
@@ -39,7 +51,7 @@ let _createFleet = async(killmail, kill, system) => {
     isActive,
     system
   })
-  .intercept((e) => console.log('Fleet create error:', e))
+  .intercept((e) => sails.log.error('Fleet create error:', e))
   .fetch();
 
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
@@ -51,12 +63,36 @@ let _createFleet = async(killmail, kill, system) => {
     .populate('kills')
     .populate('system');
 
-  Dispatcher.notifySockets(fleet, 'fleet', system);
+  let resolvedChars = [];
 
+  for (let character of fleet.characters) {
+    let corporation = await Corporation.findOne(character.corporation),
+        alliance;
+
+    if (character.alliance)
+      alliance = await Alliance.findOne(character.alliance);
+
+    character.corporation = corporation;
+    character.alliance = alliance;
+
+    resolvedChars.push(character);
+  }
+
+  await Promise.all(resolvedChars);
+
+  // Now let's resolve the ship type IDs for each character.
+  let resolvedCharsWithShips = await Resolver.composition(fleet.composition, resolvedChars);
+
+  fleet.characters = resolvedCharsWithShips;
+
+  Dispatcher.notifySockets(fleet, 'fleet');
+  sails.log.debug('[Identifier._createFleet] End');
   return fleet;
 };
 
 let _updateFleet = async(killmail, kill, system, fleet) => {
+  sails.log.debug('[Identifier._updateFleet] Begin');
+
   if (!fleet) {
     return sails.log.error('[Identifier._updateFleet] No fleet to update');
   }
@@ -68,7 +104,8 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  let composition = {}, lastSeen;
+  let { composition } = fleet,
+      lastSeen;
 
   // If this is the newest kill for the fleet, update the fleet's last seen time.
   if (fleet.lastSeen < time) {
@@ -90,8 +127,30 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
     .populate('kills')
     .populate('system');
 
-  Dispatcher.notifySockets(fleet, 'fleet', system);
+  let resolvedChars = [];
 
+  for (let character of fleet.characters) {
+    let corporation = await Corporation.findOne(character.corporation),
+        alliance;
+
+    if (character.alliance)
+      alliance = await Alliance.findOne(character.alliance);
+
+    character.corporation = corporation;
+    character.alliance = alliance;
+
+    resolvedChars.push(character);
+  }
+
+  await Promise.all(resolvedChars);
+
+  // Now let's resolve the ship type IDs for each character.
+  let resolvedCharsWithShips = await Resolver.composition(fleet.composition, resolvedChars);
+
+  fleet.characters = resolvedCharsWithShips;
+
+  Dispatcher.notifySockets(fleet, 'fleet');
+  sails.log.debug('[Identifier._updateFleet] End');
   return fleet;
 };
 
@@ -116,8 +175,10 @@ let _mergeFleets = async(fleets) => {
       record.composition[characterId] = shipTypeId;
     });
 
-    if (fleet.id !== record.id)
+    if (fleet.id !== record.id) {
       await Fleet.destroy({ id: fleet.id });
+      Dispatcher.notifySockets(fleet, 'fleet_expire');
+    }
   }
 
   characters = _.uniq(characters);
@@ -144,7 +205,11 @@ let Identifier = {
     if (!attackers.length)
       return;
 
+    sails.log.debug(`[Identifier.fleet] Fetching active fleets...`);
+
     let fleets = await Fleet.find({ isActive: true }).populate('characters');
+
+    sails.log.debug(`[Identifier.fleet] Scoring fleets...`);
 
     let scoredFleets = fleets.map((fleet) => {
       let { id, characters } = fleet;
@@ -156,6 +221,8 @@ let Identifier = {
 
       return { id, score, characters: characters.length };
     }).filter((f) => f.score !== 1);
+
+    sails.log.debug(`[Identifier.fleet] Sorting scored fleets...`);
 
     scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
 
@@ -173,7 +240,7 @@ let Identifier = {
             return _.find(fleets, (f) => f.id === sf.id);
           });
 
-          fleet = await _mergeFleets(fleetsToMerge);
+          fleet = await _mergeFleets(fleetsToMerge, system);
         }
 
         fleet = await _updateFleet(killmail, kill, system, fleet);
