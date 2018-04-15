@@ -21,8 +21,7 @@ module.exports = {
     let fleets = await Fleet.find({ system: system.id, isActive: true })
       .populate('characters')
       .populate('kills')
-      .sort('lastSeen DESC')
-      .limit(6);
+      .sort('lastSeen DESC');
 
     let kills = await Kill.find({ system: system.id })
       .populate('ship')

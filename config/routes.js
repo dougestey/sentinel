@@ -10,6 +10,8 @@
 
 module.exports.routes = {
 
-  'GET /api/sentinel/tracker/systems/:systemId' : 'SystemController.track'
+  'GET /api/sentinel/tracker/systems/:systemId' : 'SystemController.track',
+
+  'GET /api/sentinel/socket': 'SocketController.connect'
 
 };

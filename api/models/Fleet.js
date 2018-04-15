@@ -41,8 +41,6 @@ module.exports = {
 
     characters: { collection: 'character', via: 'fleet' },
 
-    // engagements: { collection: 'engagement' },
-
     kills: { collection: 'kill', via: 'fleet' }
 
   },

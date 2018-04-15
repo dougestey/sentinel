@@ -37,6 +37,7 @@ function init() {
   // Fleet
 
   jobs.process('determine_fleet_health', (job, done) => {
+    // let dateString = new Date().toISOString();
     Fleet.find({ isActive: true })
       .then(async(fleets) => {
         for (let fleet of fleets) {
@@ -45,8 +46,21 @@ function init() {
 
           let diff = now.diff(lastSeen, 'minutes');
 
-          if (Math.abs(diff) > parseInt(process.env.FLEET_EXPIRY_IN_MINUTES))
+          if (Math.abs(diff) > parseInt(process.env.FLEET_EXPIRY_IN_MINUTES)) {
             await Fleet.update(fleet.id, { isActive: false, endTime: new Date().toISOString() });
+
+            sails.log.debug(`Fleet.system ${fleet.system}`);
+
+            if (!fleet.system)
+              sails.log.error(`[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`);
+
+            let system = await System.findOne({ id: fleet.system });
+            fleet.system = system;
+
+            Dispatcher.notifySockets(fleet, 'fleet_expire');
+          } else {
+            await Fleet.update(fleet.id, { updatedAt: new Date().toISOString() });
+          }
         }
 
         done(null);
@@ -54,7 +68,13 @@ function init() {
   });
 
   jobs.process('determine_fleet_threat_level', (job, done) => {
-    Fleet.find({ isActive: true, dangerRatio: null })
+    Fleet.find({
+        isActive: true,
+        or: [
+          { dangerRatio: null },
+          { dangerRatio: 0 }
+        ]
+      })
       .limit(10)
       .populate('characters')
       .then(async(fleets) => {
@@ -62,6 +82,13 @@ function init() {
           let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id, dangerRatio: { '>' : 0 } });
 
           await Fleet.update(fleet.id, { dangerRatio });
+
+          let system = await System.findOne({ id: fleet.system });
+
+          fleet.system = system;
+          fleet.dangerRatio = dangerRatio;
+
+          Dispatcher.notifySockets(fleet, 'fleet');
         }
 
         done(null);

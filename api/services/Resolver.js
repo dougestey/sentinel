@@ -7,7 +7,7 @@
 
 let Resolver = {
 
-  async nearestCelestial(position, systemId) {
+  async position(position, systemId) {
     let {
       itemName,
       typeid: typeId,

@@ -37,7 +37,7 @@ module.exports = {
     let { id: ship } = await Swagger.type(shipTypeId),
         { id: victim } = await Swagger.character(characterId),
         { id: system } = await Swagger.system(systemId),
-        positionName = await Resolver.nearestCelestial(position, systemId);
+        positionName = await Resolver.position(position, systemId);
 
     let kill = await Kill.create({
       killId,

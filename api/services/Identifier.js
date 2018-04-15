@@ -201,15 +201,42 @@ let Identifier = {
     // Attackers without a corporation ID are NPCs
     let attackers = killmail.attackers.filter((a) => a.corporation_id).map((a) => a.character_id);
 
+    // Some of the [] above will be undefined due to no corporation_id (NPC etc)
+    // We still need the total number of attackers for scoring logic, so create a new compacted []
+    let attackersWithIds = _.compact(attackers);
+
     // Killed by NPCs = no fleet
     if (!attackers.length)
       return;
 
-    sails.log.debug(`[Identifier.fleet] Fetching active fleets...`);
+    sails.log.debug(`[Identifier.fleet] Fetching active fleet records related to km...`);
 
-    let fleets = await Fleet.find({ isActive: true }).populate('characters');
+    // The old way. This sometimes racked up a couple hundred fleet records and over 1K characters.
+    // Very bad.
+    //
+    // let fleets = await Fleet.find({ isActive: true }).populate('characters');
 
-    sails.log.debug(`[Identifier.fleet] Scoring fleets...`);
+    let fleetIds = [];
+
+    for (let characterId of attackersWithIds) {
+      let record = await Character.findOne({ characterId });
+
+      if (record && record.fleet)
+        fleetIds.push(record.fleet);
+    }
+
+    fleetIds = _.uniq(fleetIds);
+
+    let fleets = [];
+
+    for (let id of fleetIds) {
+      let record = await Fleet.findOne({ id, isActive: true }).populate('characters');
+
+      if (record)
+        fleets.push(record);
+    }
+
+    sails.log.debug(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
 
     let scoredFleets = fleets.map((fleet) => {
       let { id, characters } = fleet;
@@ -232,7 +259,7 @@ let Identifier = {
     if (bestMatch) {
       fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 
-      if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.5) {
+      if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.8) {
         fleet = await _createFleet(killmail, kill, system);
       } else {
         if (scoredFleets.length > 1) {
