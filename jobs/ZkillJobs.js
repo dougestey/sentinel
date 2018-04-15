@@ -15,8 +15,8 @@ let ZkillJobs = {
     let job = sails.config.jobs.create('read_kill_stream');
 
     job.on('failed', function(err) {
-      console.error('[Zkill.readKillStream] Job failed');
-      console.error(err);
+      sails.log.error('[Zkill.readKillStream] Job failed');
+      sails.log.error(err);
     });
 
     job.save();
@@ -26,8 +26,8 @@ let ZkillJobs = {
     let job = sails.config.jobs.create('update_danger_ratios');
 
     job.on('failed', function(err) {
-      console.error('[Zkill.updateDangerRatios] Job failed');
-      console.error(err);
+      sails.log.error('[Zkill.updateDangerRatios] Job failed');
+      sails.log.error(err);
     });
 
     job.save();

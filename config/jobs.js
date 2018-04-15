@@ -38,8 +38,8 @@ function init() {
 
   jobs.process('determine_fleet_health', (job, done) => {
     Fleet.find({ isActive: true })
-      .then((fleets) => {
-        fleets = fleets.map(async(fleet) => {
+      .then(async(fleets) => {
+        for (let fleet of fleets) {
           let lastSeen = moment(fleet.lastSeen),
               now = moment();
 
@@ -47,14 +47,15 @@ function init() {
 
           if (Math.abs(diff) > parseInt(process.env.FLEET_EXPIRY_IN_MINUTES))
             await Fleet.update(fleet.id, { isActive: false, endTime: new Date().toISOString() });
-        });
+        }
 
         done(null);
       })
   });
 
   jobs.process('determine_fleet_threat_level', (job, done) => {
-    Fleet.find({ isActive: true })
+    Fleet.find({ isActive: true, dangerRatio: null })
+      .limit(10)
       .populate('characters')
       .then(async(fleets) => {
         for (let fleet of fleets) {

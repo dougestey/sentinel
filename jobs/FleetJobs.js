@@ -15,8 +15,8 @@ let FleetJobs = {
     let job = sails.config.jobs.create('determine_fleet_health');
 
     job.on('failed', function(err) {
-      console.error('[Fleet.determineFleetHealth] Job failed');
-      console.error(err);
+      sails.log.error('[Fleet.determineFleetHealth] Job failed');
+      sails.log.error(err);
     });
 
     job.save();
@@ -26,8 +26,8 @@ let FleetJobs = {
     let job = sails.config.jobs.create('determine_fleet_threat_level');
 
     job.on('failed', function(err) {
-      console.error('[Fleet.determineFleetThreatlevel] Job failed');
-      console.error(err);
+      sails.log.error('[Fleet.determineFleetThreatlevel] Job failed');
+      sails.log.error(err);
     });
 
     job.save();

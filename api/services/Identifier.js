@@ -8,7 +8,7 @@
 let _resolveCharacters = async(ids) => {
   let resolved = [];
 
-  sails.log.debug('[Identifier._resolveCharacters] Begin');
+  sails.log.debug(`[Identifier._resolveCharacters] Resolving ${ids.length} characters...`);
 
   for (let characterId of ids) {
     let character;
@@ -232,7 +232,7 @@ let Identifier = {
     if (bestMatch) {
       fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 
-      if (!fleet) {
+      if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.5) {
         fleet = await _createFleet(killmail, kill, system);
       } else {
         if (scoredFleets.length > 1) {
