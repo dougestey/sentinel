@@ -32,7 +32,7 @@ let Resolver = {
 
     sails.log.debug(`[Resolver.composition] Begin`);
 
-    // ids: [] of pilots, each one containing `character_id` and `ship_type_id`
+    // ids: [] of pilots { character_id, ship_type_id }
     // characters: [] of character records
 
     let shipTypeIds = [];

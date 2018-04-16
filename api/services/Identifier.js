@@ -25,12 +25,11 @@ let _resolveCharacters = async(ids) => {
 
   sails.log.debug('[Identifier._resolveCharacters] End');
 
+  // TODO: Does this _.compact call do anything?
   return _.compact(resolved);
 };
 
 let _createFleet = async(killmail, kill, system) => {
-  sails.log.debug('[Identifier._createFleet] Begin');
-
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
       characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id)),
@@ -57,42 +56,12 @@ let _createFleet = async(killmail, kill, system) => {
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  fleet = await Fleet.findOne(fleet.id)
-    .populate('system')
-    .populate('characters')
-    .populate('kills')
-    .populate('system');
+  fleet = await FleetSerializer.one(fleet.id);
 
-  let resolvedChars = [];
-
-  for (let character of fleet.characters) {
-    let corporation = await Corporation.findOne(character.corporation),
-        alliance;
-
-    if (character.alliance)
-      alliance = await Alliance.findOne(character.alliance);
-
-    character.corporation = corporation;
-    character.alliance = alliance;
-
-    resolvedChars.push(character);
-  }
-
-  await Promise.all(resolvedChars);
-
-  // Now let's resolve the ship type IDs for each character.
-  let resolvedCharsWithShips = await Resolver.composition(fleet.composition, resolvedChars);
-
-  fleet.characters = resolvedCharsWithShips;
-
-  Dispatcher.notifySockets(fleet, 'fleet');
-  sails.log.debug('[Identifier._createFleet] End');
   return fleet;
 };
 
 let _updateFleet = async(killmail, kill, system, fleet) => {
-  sails.log.debug('[Identifier._updateFleet] Begin');
-
   if (!fleet) {
     return sails.log.error('[Identifier._updateFleet] No fleet to update');
   }
@@ -119,42 +88,14 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
     composition[character_id] = ship_type_id;
   });
 
-  await Fleet.update({ id: fleet.id }, { lastSeen, composition, system });
+  await Fleet.update(fleet.id, { lastSeen, composition, system });
 
-  fleet = await Fleet.findOne(fleet.id)
-    .populate('system')
-    .populate('characters')
-    .populate('kills')
-    .populate('system');
+  fleet = await FleetSerializer.one(fleet.id);
 
-  let resolvedChars = [];
-
-  for (let character of fleet.characters) {
-    let corporation = await Corporation.findOne(character.corporation),
-        alliance;
-
-    if (character.alliance)
-      alliance = await Alliance.findOne(character.alliance);
-
-    character.corporation = corporation;
-    character.alliance = alliance;
-
-    resolvedChars.push(character);
-  }
-
-  await Promise.all(resolvedChars);
-
-  // Now let's resolve the ship type IDs for each character.
-  let resolvedCharsWithShips = await Resolver.composition(fleet.composition, resolvedChars);
-
-  fleet.characters = resolvedCharsWithShips;
-
-  Dispatcher.notifySockets(fleet, 'fleet');
-  sails.log.debug('[Identifier._updateFleet] End');
   return fleet;
 };
 
-let _mergeFleets = async(fleets) => {
+let _mergeFleets = async(fleets, systemId) => {
   // Record to merge into has already been sorted to top in Identifier.fleet
   let record = _.first(fleets),
       characters = [];
@@ -177,6 +118,10 @@ let _mergeFleets = async(fleets) => {
 
     if (fleet.id !== record.id) {
       await Fleet.destroy({ id: fleet.id });
+
+      let system = await System.findOne(systemId);
+      fleet.system = system;
+
       Dispatcher.notifySockets(fleet, 'fleet_expire');
     }
   }
@@ -198,24 +143,23 @@ let _mergeFleets = async(fleets) => {
 let Identifier = {
 
   async fleet(killmail, system, kill) {
-    // Attackers without a corporation ID are NPCs
+    // Attackers without a corporation ID aren't relevant
     let attackers = killmail.attackers.filter((a) => a.corporation_id).map((a) => a.character_id);
 
     // Some of the [] above will be undefined due to no corporation_id (NPC etc)
     // We still need the total number of attackers for scoring logic, so create a new compacted []
     let attackersWithIds = _.compact(attackers);
 
-    // Killed by NPCs = no fleet
+    // No real players with corporation_ids = no identifiable fleet
     if (!attackers.length)
       return;
 
     sails.log.debug(`[Identifier.fleet] Fetching active fleet records related to km...`);
 
-    // The old way. This sometimes racked up a couple hundred fleet records and over 1K characters.
-    // Very bad.
+    // The naive way. This sometimes racked up a couple hundred fleet records and over 1K characters.
+    // i.e. don't do this anywhere.
     //
     // let fleets = await Fleet.find({ isActive: true }).populate('characters');
-
     let fleetIds = [];
 
     for (let characterId of attackersWithIds) {
@@ -225,6 +169,8 @@ let Identifier = {
         fleetIds.push(record.fleet);
     }
 
+    // Some of the pilots above will be in the same fleet already. No point in resolving 
+    // those records more than once.
     fleetIds = _.uniq(fleetIds);
 
     let fleets = [];
@@ -259,9 +205,15 @@ let Identifier = {
     if (bestMatch) {
       fleet = _.find(fleets, (f) => f.id === bestMatch.id);
 
+      // TODO: Arbitrary logic here. Iron this out a bit.
       if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.8) {
+        // We don't have a good enough match, so create a new fleet.
         fleet = await _createFleet(killmail, kill, system);
       } else {
+        // More than once match with the same score.
+        // Merge those results before continuing.
+        //
+        // TODO: This needs more testing.
         if (scoredFleets.length > 1) {
           let fleetsToMerge = scoredFleets.map((sf) => {
             return _.find(fleets, (f) => f.id === sf.id);
@@ -270,9 +222,11 @@ let Identifier = {
           fleet = await _mergeFleets(fleetsToMerge, system);
         }
 
+        // Update existing fleet based on this kill.
         fleet = await _updateFleet(killmail, kill, system, fleet);
       }
     } else {
+      // No matches whatsoever. Create a fleet.
       fleet = await _createFleet(killmail, kill, system);
     }
 

@@ -13,7 +13,9 @@ module.exports = {
 
     let { systemId } = req.params;
 
-    let system = await System.findOne({ systemId });
+    systemId = parseInt(systemId);
+
+    let system = await Swagger.system(systemId);
 
     if (!system)
       return res.notFound();
@@ -30,30 +32,12 @@ module.exports = {
       .sort('time DESC')
       .limit(10);
 
-    // Flesh out useful corp/alliance data for chars.
-    // Also resolve shiptypes.
+    let resolvedFleets = [];
+
     for (let fleet of fleets) {
-      let resolvedChars = [];
+      let resolvedFleet = await FleetSerializer.one(fleet.id);
 
-      for (let character of fleet.characters) {
-        let corporation = await Corporation.findOne(character.corporation),
-            alliance;
-
-        if (character.alliance)
-          alliance = await Alliance.findOne(character.alliance);
-
-        character.corporation = corporation;
-        character.alliance = alliance;
-
-        resolvedChars.push(character);
-      }
-
-      await Promise.all(resolvedChars);
-
-      // Now let's resolve the ship type IDs for each character.
-      let resolvedCharsWithShips = await Resolver.composition(fleet.composition, resolvedChars);
-
-      fleet.characters = resolvedCharsWithShips;
+      resolvedFleets.push(resolvedFleet);
     }
 
     // Subscribe sockets to future system updates.
@@ -61,7 +45,14 @@ module.exports = {
       Dispatcher.joinPool(req);
     }
 
-    return res.status(200).json({ systemId, system, fleets, kills });
+    return res.status(200).json(
+      {
+        systemId,
+        system,
+        fleets: resolvedFleets,
+        kills
+      }
+    );
   }
 
 };

@@ -5,6 +5,8 @@
  * @help        :: https://github.com/zKillboard/RedisQ
  */
 
+let moment = require('moment');
+
 module.exports = {
 
   async kill(package) {
@@ -51,15 +53,25 @@ module.exports = {
     .intercept('E_UNIQUE', (e) => { return sails.log.error(`[ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`) })
     .fetch();
 
+    let now = moment(),
+        then = moment(time),
+        fleet;
+
+    let elapsedTime = now.diff(then, 'minutes');
+
     // We don't track Sansha, and he doesn't track us.
-    if (!package.zkb.npc)
-      await Identifier.fleet(package.killmail, system, kill);
+    // Also, sometimes zKill feeds us really old mails.
+    if (!package.zkb.npc || elapsedTime < 30)
+      fleet = await Identifier.fleet(package.killmail, system, kill);
 
     kill = await Kill.findOne(kill.id)
       .populate('ship')
       .populate('victim')
       .populate('system')
       .populate('fleet');
+
+    if (fleet)
+      Dispatcher.notifySockets(fleet, 'fleet');
 
     Dispatcher.notifySockets(kill, 'kill');
   }

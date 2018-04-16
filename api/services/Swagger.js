@@ -1,7 +1,7 @@
 /**
  * Swagger
  *
- * @description :: The gateway to ESI.
+ * @description :: The gateway to ESI. Resolves EVE IDs to local records with caching.
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
@@ -104,9 +104,14 @@ module.exports = {
 
     let localSystem = await System.findOne({ systemId });
 
+    // Bootstrap gives us all systems with systemIds. If we don't have a systemId,
+    // we're either not bootstrapped or it doesn't exist.
     if (!localSystem)
       return;
 
+    // Rich system information such as name, position, securityStatus comes from
+    // a direct ESI request for that data. After the first time we cache it indefinitely.
+    //
     // TODO: Improve this check
     if (!localSystem.name) {
       let system = await ESI.request(`/universe/systems/${systemId}`);
