@@ -11,7 +11,7 @@ let FleetJobs = {
   },
 
   determineFleetHealth() {
-    let job = sails.config.jobs.create('determine_fleet_health').priority('medium');
+    let job = sails.config.jobs.create('determine_fleet_health').priority('low').ttl(everyMinute);
 
     job.on('failed', function(err) {
       sails.log.error('[Fleet.determineFleetHealth] Job failed');
@@ -22,7 +22,7 @@ let FleetJobs = {
   },
 
   determineFleetThreatLevel() {
-    let job = sails.config.jobs.create('determine_fleet_threat_level').priority('low');
+    let job = sails.config.jobs.create('determine_fleet_threat_level').priority('low').ttl(everyMinute);
 
     job.on('failed', function(err) {
       sails.log.error('[Fleet.determineFleetThreatlevel] Job failed');

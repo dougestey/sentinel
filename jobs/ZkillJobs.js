@@ -1,6 +1,6 @@
 const everyMinute = 1000 * 60;
 const everyThirtySeconds = everyMinute / 2;
-const fiveMinutes = 5 * everyMinute;
+const twoMinutes = 2 * everyMinute;
 
 let ZkillJobs = {
 
@@ -13,7 +13,7 @@ let ZkillJobs = {
   },
 
   readKillStream() {
-    let job = sails.config.jobs.create('read_kill_stream').ttl(fiveMinutes);
+    let job = sails.config.jobs.create('read_kill_stream').ttl(twoMinutes);
 
     job.on('failed', function(err) {
       sails.log.error('[Zkill.readKillStream] Job failed');
@@ -24,7 +24,7 @@ let ZkillJobs = {
   },
 
   updateDangerRatios() {
-    let job = sails.config.jobs.create('update_danger_ratios').priority('low');
+    let job = sails.config.jobs.create('update_danger_ratios').priority('low').ttl(everyMinute);
 
     job.on('failed', function(err) {
       sails.log.error('[Zkill.updateDangerRatios] Job failed');
