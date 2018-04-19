@@ -1,5 +1,6 @@
 const everyMinute = 1000 * 60;
 const everyThirtySeconds = everyMinute / 2;
+const fiveMinutes = 5 * everyMinute;
 
 let ZkillJobs = {
 
@@ -12,7 +13,7 @@ let ZkillJobs = {
   },
 
   readKillStream() {
-    let job = sails.config.jobs.create('read_kill_stream');
+    let job = sails.config.jobs.create('read_kill_stream').ttl(fiveMinutes);
 
     job.on('failed', function(err) {
       sails.log.error('[Zkill.readKillStream] Job failed');
