@@ -14,7 +14,18 @@ let _shouldTrack = (package) => {
 module.exports = {
 
   fetch() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
+      let esiIsOnline;
+
+      try {
+        esiIsOnline = await Swagger.status();
+      } catch(e) {
+        return reject(new Error('ESI is not responding, pausing kill fetch.'));
+      }
+
+      if (!esiIsOnline)
+        return reject(new Error('ESI endpoint degradation detected, pausing kill fetch.'));
+
       request({
         url: 'https://redisq.zkillboard.com/listen.php?ttw=3', 
         method: 'GET',

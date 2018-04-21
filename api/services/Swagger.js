@@ -11,6 +11,28 @@ let ESI = require('eve-swagger-simple'),
 
 module.exports = {
 
+  async status() {
+    let status;
+
+    try {
+      status = await ESI.request('/status.json');
+    } catch (e) {
+      return false;
+    }
+
+    if (!status || !status.length)
+      return false;
+
+    let allSystemsGo = true;
+
+    status.map((endpoint) => {
+      if (endpoint.status !== 'green')
+        allSystemsGo = false;
+    });
+
+    return allSystemsGo;
+  },
+
   async initialize() {
     let systems = await ESI.request('/universe/systems'),
         fn = async function(systemId) {
