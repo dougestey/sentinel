@@ -36,10 +36,47 @@ module.exports = {
       return;
     }
 
-    let { id: ship } = await Swagger.type(shipTypeId),
-        { id: victim } = await Swagger.character(characterId),
-        { id: system } = await Swagger.system(systemId),
-        positionName = await Resolver.position(position, systemId);
+    let shipRes,
+        victimRes,
+        systemRes,
+        positionRes;
+
+    try {
+      shipRes = await Swagger.type(shipTypeId);
+    } catch(e) {
+      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(e);
+      return;
+    }
+
+    try {
+      victimRes = await Swagger.character(characterId);
+    } catch(e) {
+      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(e);
+      return;
+    }
+
+    try {
+      systemRes = await Swagger.system(systemId);
+    } catch(e) {
+      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(e);
+      return;
+    }
+
+    try {
+      positionRes = await Resolver.position(position, systemId);
+    } catch(e) {
+      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(e);
+      return;
+    }
+
+    let { id: ship } = shipRes,
+        { id: victim } = victimRes,
+        { id: system } = systemRes,
+        positionName = positionRes;
 
     let kill = await Kill.create({
       killId,

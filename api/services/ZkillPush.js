@@ -19,7 +19,7 @@ module.exports = {
         url: 'https://redisq.zkillboard.com/listen.php?ttw=3', 
         method: 'GET',
         headers: {
-          'User-Agent': 'https://gloss.space'
+          'User-Agent': 'http://gloss.space'
         },
         json: true
       }, async(error, response, body) => {

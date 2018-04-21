@@ -8,10 +8,19 @@
 let Resolver = {
 
   async position(position, systemId) {
+    let response;
+
+    try {
+      response = await Fuzzworks.nearestCelestial(position, systemId);
+    } catch(e) {
+      sails.log.error(`[Resolver] Fuzzworks failure: ${e}`);
+      return 'Unknown';
+    }
+
     let {
       itemName,
       typeid: typeId,
-      itemid: itemId } = await Fuzzworks.nearestCelestial(position, systemId);
+      itemid: itemId } = response;
 
     // Unfortunately Fuzzworks doesn't give us an itemName for stargates.
     // It does seem to handle belts and stations fine. More testing req'd.
