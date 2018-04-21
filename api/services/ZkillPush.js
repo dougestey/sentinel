@@ -20,11 +20,13 @@ module.exports = {
       try {
         esiIsOnline = await Swagger.status();
       } catch(e) {
-        return reject(new Error('ESI is not responding, pausing kill fetch.'));
+        return resolve(new Error('ESI is not responding, pausing kill fetch.'));
       }
 
       if (!esiIsOnline)
-        return reject(new Error('ESI endpoint degradation detected, pausing kill fetch.'));
+        return resolve(new Error('ESI endpoint degradation detected, pausing kill fetch.'));
+
+      sails.log.debug('[ZkillPush.fetch] ESI is green.');
 
       request({
         url: 'https://redisq.zkillboard.com/listen.php?ttw=3', 

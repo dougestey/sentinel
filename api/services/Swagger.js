@@ -9,28 +9,55 @@ let ESI = require('eve-swagger-simple'),
     request = require('request'),
     qs = require('qs');
 
+let _endpointIsNeeded = (endpoint) => {
+  let requiredEndpoints = [
+    '/universe/names/',
+    '/universe/systems/',
+    '/characters/{character_id}/',
+    '/universe/types/{type_id}/',
+    '/universe/systems/{system_id}/',
+    '/universe/stargates/{stargate_id}/',
+    '/corporations/{corporation_id}/',
+    '/alliances/{alliance_id}/'
+  ];
+
+  let isNeeded = false;
+
+  requiredEndpoints.map((route) => {
+    if (route === endpoint.route)
+      return true;
+  });
+};
+
 module.exports = {
 
-  async status() {
-    let status;
+  status() {
+    return new Promise((resolve, reject) => {
+      request.get('https://esi.tech.ccp.is/status.json',
+      { json: true },
+      (error, response, body) => {
+        if (error) {
+          sails.log.error(`[Swagger.status] ${error}`);
+          return resolve(false);
+        }
 
-    try {
-      status = await ESI.request('/status.json');
-    } catch (e) {
-      return false;
-    }
+        if (!body)
+          return resolve(false);
 
-    if (!status || !status.length)
-      return false;
+        let allSystemsGo = true,
+            status = body;
 
-    let allSystemsGo = true;
+        status.map((endpoint) => {
+          if (_endpointIsNeeded(endpoint) && endpoint.status !== 'green') {
+            allSystemsGo = false;
 
-    status.map((endpoint) => {
-      if (endpoint.status !== 'green')
-        allSystemsGo = false;
+            sails.log.error(`[Swagger.status] ${endpoint.route} is ${endpoint.status}.`);
+          }
+        });
+
+        return resolve(allSystemsGo);
+      });
     });
-
-    return allSystemsGo;
   },
 
   async initialize() {
