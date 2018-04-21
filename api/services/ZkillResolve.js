@@ -96,9 +96,7 @@ module.exports = {
 
     let elapsedTime = now.diff(then, 'minutes');
 
-    // We don't track Sansha, and he doesn't track us.
-    // Also, sometimes zKill feeds us really old mails.
-    if (!package.zkb.npc || elapsedTime < 30)
+    if (process.env.TRACK_FLEETS === 'true' && elapsedTime < 30)
       fleet = await Identifier.fleet(package.killmail, system, kill);
 
     kill = await Kill.findOne(kill.id)

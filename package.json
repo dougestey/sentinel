@@ -1,14 +1,13 @@
 {
   "name": "sentinel",
   "private": false,
-  "version": "0.0.0",
-  "description": "An automated fleet tracker for EVE Online.",
+  "version": "0.1.0",
+  "description": "A WebSocket-compatible fleet tracker for EVE Online.",
   "keywords": [],
   "dependencies": {
     "async": "2.0.1",
     "dotenv-safe": "^5.0.1",
     "eve-swagger-simple": "https://github.com/dougestey/eve-swagger-simple",
-    "grunt": "1.0.1",
     "kue": "^0.11.6",
     "lodash": "3.10.1",
     "moment": "^2.20.1",
@@ -16,20 +15,13 @@
     "redis": "^2.8.0",
     "request": "^2.83.0",
     "sails": "1.0.0-45",
-    "sails-hook-grunt": "^3.0.2",
     "sails-hook-orm": "^2.0.0-16",
     "sails-hook-sockets": "^1.4.0",
     "sails-mongo": "^1.0.0-11",
     "socket.io-redis": "5.2.0"
   },
-  "devDependencies": {
-    "eslint": "4.11.0"
-  },
   "scripts": {
-    "start": "NODE_ENV=production node app.js",
-    "test": "npm run lint && npm run custom-tests && echo 'Done.'",
-    "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your code looks good.'",
-    "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
+    "start": "NODE_ENV=production node app.js"
   },
   "main": "app.js",
   "repository": {
@@ -37,7 +29,7 @@
     "url": "git://github.com/dougestey/sentinel.git"
   },
   "author": "doug.estey@gmail.com",
-  "license": "",
+  "license": "MIT",
   "engines": {
     "node": "8"
   }

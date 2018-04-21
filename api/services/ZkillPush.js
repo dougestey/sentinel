@@ -32,7 +32,7 @@ module.exports = {
         url: 'https://redisq.zkillboard.com/listen.php?ttw=3', 
         method: 'GET',
         headers: {
-          'User-Agent': 'http://gloss.space'
+          'User-Agent': process.env.APP_URL
         },
         json: true
       }, async(error, response, body) => {
