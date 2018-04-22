@@ -96,7 +96,7 @@ module.exports = {
 
     let elapsedTime = now.diff(then, 'minutes');
 
-    if (process.env.TRACK_FLEETS === 'true' && elapsedTime < 30)
+    if (process.env.TRACK_FLEETS === 'true' && elapsedTime < parseInt(process.env.FLEET_EXPIRY_IN_MINUTES))
       fleet = await Identifier.fleet(package.killmail, system, kill);
 
     kill = await Kill.findOne(kill.id)
