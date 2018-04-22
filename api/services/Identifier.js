@@ -223,7 +223,7 @@ let Identifier = {
 
     // We have only one match. Since we've already fetched the fleet records, no need
     // to re-query. Just grab it from the fleets []
-    return _.find(fleets, (f) => f.id === bestMatch.id);
+    return _.find(fleets, (f) => f.id === bestMatches[0].id);
   }
 
 };
