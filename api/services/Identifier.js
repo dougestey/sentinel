@@ -225,9 +225,9 @@ let Identifier = {
       return fleet;
     }
 
-    // We have only one match. Since we've already fetched the fleet records, no need
-    // to re-query. Just grab it from the fleets []
-    return _.find(fleets, (f) => f.id === bestMatches[0].id);
+    let fleet = await FleetSerializer.one(bestMatches[0].id);
+
+    return fleet;    
   }
 
 };
