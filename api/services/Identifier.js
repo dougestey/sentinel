@@ -182,6 +182,11 @@ let Identifier = {
         fleets.push(record);
     }
 
+    // No matching fleets, so we stop here.
+    if (!fleets.length) {
+      return _createFleet(killmail, kill, system);
+    }
+
     sails.log.debug(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
 
     let scoredFleets = fleets.map((fleet) => {
@@ -193,44 +198,32 @@ let Identifier = {
           score = points / attackers.length;
 
       return { id, score, characters: characters.length };
-    }).filter((f) => f.score !== 1);
+    });
 
     sails.log.debug(`[Identifier.fleet] Sorting scored fleets...`);
 
     scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
 
-    // 1 is the worst possible score (no matches) while 0 is the best (all matched)
-    let bestMatch = _.first(scoredFleets), fleet;
+    // 1 is the worst possible score (no matches, and theoretically impossible since we've
+    // derived our fleet pool from matching characters) while 0 is the best (all matched)
+    let maxScore = _.first(scoredFleets).score;
+    let bestMatches = _.filter(scoredFleets, (sf) => sf.score === maxScore);
 
-    if (bestMatch) {
-      fleet = _.find(fleets, (f) => f.id === bestMatch.id);
+    // If we have more than one best match, merge those fleets. Then relate the kill & stop.
+    if (bestMatches.length > 1) {
+      let fleetsToMerge = bestMatches.map((match) => {
+        return _.find(fleets, (f) => f.id === match.id);
+      });
 
-      // TODO: Arbitrary logic here. Iron this out a bit.
-      if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.8) {
-        // We don't have a good enough match, so create a new fleet.
-        fleet = await _createFleet(killmail, kill, system);
-      } else {
-        // More than once match with the same score.
-        // Merge those results before continuing.
-        //
-        // TODO: This needs more testing.
-        if (scoredFleets.length > 1) {
-          let fleetsToMerge = scoredFleets.map((sf) => {
-            return _.find(fleets, (f) => f.id === sf.id);
-          });
+      let fleet = await _mergeFleets(fleetsToMerge, system);
 
-          fleet = await _mergeFleets(fleetsToMerge, system);
-        }
-
-        // Update existing fleet based on this kill.
-        fleet = await _updateFleet(killmail, kill, system, fleet);
-      }
-    } else {
-      // No matches whatsoever. Create a fleet.
-      fleet = await _createFleet(killmail, kill, system);
+      // Update existing fleet based on this kill.
+      return _updateFleet(killmail, kill, system, fleet);
     }
 
-    return fleet;
+    // We have only one match. Since we've already fetched the fleet records, no need
+    // to re-query. Just grab it from the fleets []
+    return _.find(fleets, (f) => f.id === bestMatch.id);
   }
 
 };
