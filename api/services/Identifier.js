@@ -157,7 +157,7 @@ let Identifier = {
     sails.log.debug(`[Identifier.fleet] Fetching active fleet records related to km...`);
 
     // The naive way. This sometimes racked up a couple hundred fleet records and over 1K characters.
-    // i.e. don't do this anywhere.
+    // i.e. don't do this, ever.
     //
     // let fleets = await Fleet.find({ isActive: true }).populate('characters');
     let fleetIds = [];
@@ -184,7 +184,9 @@ let Identifier = {
 
     // No matching fleets, so we stop here.
     if (!fleets.length) {
-      return _createFleet(killmail, kill, system);
+      let fleet = await _createFleet(killmail, kill, system);
+
+      return fleet;
     }
 
     sails.log.debug(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
@@ -218,7 +220,9 @@ let Identifier = {
       let fleet = await _mergeFleets(fleetsToMerge, system);
 
       // Update existing fleet based on this kill.
-      return _updateFleet(killmail, kill, system, fleet);
+      fleet = await _updateFleet(killmail, kill, system, fleet);
+
+      return fleet;
     }
 
     // We have only one match. Since we've already fetched the fleet records, no need
