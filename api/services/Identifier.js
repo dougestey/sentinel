@@ -134,7 +134,7 @@ let Identifier = {
     sails.log.debug(`[Identifier.fleet] Fetching active fleet records related to km...`);
 
     // The naive way. This sometimes racked up a couple hundred fleet records and over 1K characters.
-    // i.e. don't do this anywhere.
+    // i.e. don't do this, ever.
     //
     // let fleets = await Fleet.find({ isActive: true }).populate('characters');
     let fleetIds = [];
