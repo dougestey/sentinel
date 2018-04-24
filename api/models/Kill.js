@@ -17,7 +17,7 @@ module.exports = {
 
     positionName: 'string',
 
-    attackers: 'json',
+    composition: 'json',
 
     // Relationships
 
