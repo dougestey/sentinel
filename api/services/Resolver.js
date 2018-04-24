@@ -39,8 +39,6 @@ let Resolver = {
 
   async composition(ids, characters) {
 
-    sails.log.debug(`[Resolver.composition] Begin`);
-
     // ids: [] of pilots { character_id, ship_type_id }
     // characters: [] of character records
 
@@ -60,8 +58,6 @@ let Resolver = {
       if (charIndex !== -1)
         characters[charIndex].ship = resolvedShipTypes[shipIndex];
     });
-
-    sails.log.debug(`[Resolver.composition] End`);
 
     return characters;
   }

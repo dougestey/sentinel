@@ -40,7 +40,7 @@ function init() {
     let now = moment(),
         fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
 
-    Fleet.find({ isActive: true, updatedAt: { '<=' : fiveMinutesAgo } })
+    Fleet.find({ isActive: true, updatedAt: { '>=' : fiveMinutesAgo } })
       .limit(50)
       .then(async(fleets) => {
         for (let fleet of fleets) {
@@ -84,10 +84,7 @@ function init() {
 
           await Fleet.update(fleet.id, { dangerRatio });
 
-          let system = await System.findOne(fleet.system);
-
-          fleet.system = system;
-          fleet.dangerRatio = dangerRatio;
+          fleet = await FleetSerializer.one(fleet.id);
 
           Dispatcher.notifySockets(fleet, 'fleet');
         }

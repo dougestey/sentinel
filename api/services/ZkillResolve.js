@@ -79,14 +79,19 @@ module.exports = {
         { id: system } = systemRes,
         positionName = positionRes;
 
-    attackers = attackers.map((a) => a.character_id);
+    let composition = {};
+
+    attackers.map(({ character_id, ship_type_id }) => {
+      if (character_id !== undefined)
+        composition[character_id] = ship_type_id;
+    });
 
     let kill = await Kill.create({
       killId,
       time,
       position,
       positionName,
-      attackers,
+      composition,
       ship,
       victim,
       system

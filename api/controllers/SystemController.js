@@ -37,7 +37,8 @@ module.exports = {
     for (let fleet of fleets) {
       let resolvedFleet = await FleetSerializer.one(fleet.id);
 
-      resolvedFleets.push(resolvedFleet);
+      if (resolvedFleet.characters.length)
+        resolvedFleets.push(resolvedFleet);
     }
 
     // Subscribe sockets to future system updates.
