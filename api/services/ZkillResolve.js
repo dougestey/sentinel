@@ -24,7 +24,8 @@ module.exports = {
         character_id: characterId,
         position,
         ship_type_id: shipTypeId
-      }
+      },
+      attackers
     } = killmail;
 
     // Check for local record. If it exists, cancel further logic.
@@ -78,11 +79,14 @@ module.exports = {
         { id: system } = systemRes,
         positionName = positionRes;
 
+    attackers = attackers.map((a) => a.character_id);
+
     let kill = await Kill.create({
       killId,
       time,
       position,
       positionName,
+      attackers,
       ship,
       victim,
       system
@@ -96,8 +100,8 @@ module.exports = {
 
     let elapsedTime = now.diff(then, 'minutes');
 
-    if (process.env.TRACK_FLEETS === 'true' && elapsedTime < 30)
-      fleet = await Identifier.fleet(package.killmail, system, kill);
+    if (process.env.TRACK_FLEETS === 'true' && elapsedTime < parseInt(process.env.FLEET_EXPIRY_IN_MINUTES))
+      fleet = await Identifier.fleet(killmail, system, kill);
 
     kill = await Kill.findOne(kill.id)
       .populate('ship')

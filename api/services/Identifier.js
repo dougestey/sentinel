@@ -29,6 +29,20 @@ let _resolveCharacters = async(ids) => {
   return _.compact(resolved);
 };
 
+let _determineActiveCharacters = async({ id: fleet }) => {
+  let kills = await Kill.find({ fleet }).sort('time DESC').limit(3);
+
+  let activeCharacters = [];
+
+  kills.map(({ attackers }) => {
+    activeCharacters = activeCharacters.concat(attackers);
+  });
+
+  activeCharacters = await _resolveCharacters(_.compact(activeCharacters));
+
+  return activeCharacters;
+};
+
 let _createFleet = async(killmail, kill, system) => {
   let { killmail_time: startTime } = killmail,
       lastSeen = startTime,
@@ -66,76 +80,39 @@ let _updateFleet = async(killmail, kill, system, fleet) => {
     return sails.log.error('[Identifier._updateFleet] No fleet to update');
   }
 
-  let { time } = kill;
+  let { time, attackers } = kill;
 
-  let characters = await _resolveCharacters(killmail.attackers.map((a) => a.character_id));
-
-  await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
-  let { composition } = fleet,
-      lastSeen;
+  let latestCharacters = await _resolveCharacters(attackers.map((a) => a.character_id));
+  let activeCharacters = await _determineActiveCharacters(fleet);
+
+  await Fleet.replaceCollection(fleet.id, 'characters').members(activeCharacters);
+
+  let { composition, lastSeen } = fleet;
 
   // If this is the newest kill for the fleet, update the fleet's last seen time.
-  if (fleet.lastSeen < time) {
+  if (lastSeen < time) {
     lastSeen = time;
   }
 
-  _.forEach(killmail.attackers, ({ character_id, ship_type_id }) => {
-    if (character_id === undefined || (fleet.composition[character_id] && time < fleet.lastSeen))
+  // Add new ships to comp, update existing if this is a newer mail
+  attackers.map(({ character_id, ship_type_id }) => {
+    if (character_id === undefined || (composition[character_id] && time < lastSeen))
       return;
 
     composition[character_id] = ship_type_id;
   });
 
+  // Remove ships for pilots that have left
+  _.keys(composition).map((characterId) => {
+    if (!_.includes(activeCharacters, characterId))
+      delete composition[characterId];
+  });
+
   await Fleet.update(fleet.id, { lastSeen, composition, system });
 
   fleet = await FleetSerializer.one(fleet.id);
-
-  return fleet;
-};
-
-let _mergeFleets = async(fleets, systemId) => {
-  // Record to merge into has already been sorted to top in Identifier.fleet
-  let record = _.first(fleets),
-      characters = [];
-
-  for (let fleet of fleets) {
-    characters = characters.concat(fleet.characters.map((c) => c.id));
-
-    if (fleet.startTime < record.startTime)
-      record.startTime = fleet.startTime;
-
-    if (fleet.lastSeen > record.lastSeen)
-      record.lastSeen = fleet.lastSeen;
-
-    _.forEach(fleet.composition, (shipTypeId, characterId) => {
-      if (record.composition[characterId] && fleet.lastSeen < record.lastSeen)
-        return;
-
-      record.composition[characterId] = shipTypeId;
-    });
-
-    if (fleet.id !== record.id) {
-      await Fleet.destroy({ id: fleet.id });
-
-      let system = await System.findOne(systemId);
-      fleet.system = system;
-
-      Dispatcher.notifySockets(fleet, 'fleet_expire');
-    }
-  }
-
-  characters = _.uniq(characters);
-
-  await Fleet.replaceCollection(record.id, 'characters').members(characters);
-
-  let { startTime, lastSeen, composition } = record,
-      updated = await Fleet.update(record.id, { startTime, lastSeen, composition }).fetch(),
-      fleet = _.first(updated);
-
-  // To avoid another lookup
-  fleet.characters = characters;
 
   return fleet;
 };
@@ -182,55 +159,53 @@ let Identifier = {
         fleets.push(record);
     }
 
+    // No matches; create a fleet.
+    if (!fleets.length) {
+      return _createFleet(killmail, kill, system);
+    }
+
+    if (fleets.length === 1) {
+      return _updateFleet(killmail, kill, system, fleets[0]);
+    }
+
+    // We have more than one fleet candidate, so let's score them.
     sails.log.debug(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
 
-    let scoredFleets = fleets.map((fleet) => {
-      let { id, characters } = fleet;
+    let candidates = fleets.map((candidate) => {
+      let { id, characters } = candidate;
 
       characters = characters.map((c) => c.characterId);
 
-      let points = _.difference(attackers, characters).length,
-          score = points / attackers.length;
+      let mostPilots, leastPilots;
 
-      return { id, score, characters: characters.length };
-    }).filter((f) => f.score !== 1);
-
-    sails.log.debug(`[Identifier.fleet] Sorting scored fleets...`);
-
-    scoredFleets = _.sortByOrder(scoredFleets, ['score', 'characters'], ['asc', 'desc']);
-
-    // 1 is the worst possible score (no matches) while 0 is the best (all matched)
-    let bestMatch = _.first(scoredFleets), fleet;
-
-    if (bestMatch) {
-      fleet = _.find(fleets, (f) => f.id === bestMatch.id);
-
-      // TODO: Arbitrary logic here. Iron this out a bit.
-      if (!fleet || bestMatch.characters.length > 10 && bestMatch.score > 0.8) {
-        // We don't have a good enough match, so create a new fleet.
-        fleet = await _createFleet(killmail, kill, system);
+      if (attackers.length > characters.length || attackers.length === characters.length) {
+        mostPilots = attackers;
+        leastPilots = characters;
       } else {
-        // More than once match with the same score.
-        // Merge those results before continuing.
-        //
-        // TODO: This needs more testing.
-        if (scoredFleets.length > 1) {
-          let fleetsToMerge = scoredFleets.map((sf) => {
-            return _.find(fleets, (f) => f.id === sf.id);
-          });
-
-          fleet = await _mergeFleets(fleetsToMerge, system);
-        }
-
-        // Update existing fleet based on this kill.
-        fleet = await _updateFleet(killmail, kill, system, fleet);
+        mostPilots = characters;
+        leastPilots = attackers;
       }
+
+      let differentIds = _.difference(mostPilots, leastPilots),
+          similarity = 1 - differentIds.length / mostPilots.length;
+
+      return { id, similarity, size: characters.length };
+    });
+
+    sails.log.debug(`[Identifier.fleet] Sorting potential matches...`);
+
+    candidates = _.sortByOrder(candidates, ['similarity', 'size'], ['desc', 'desc']);
+
+    let bestMatch = _.first(candidates);
+    let fleet = _.find(fleets, (f) => f.id === bestMatch.id);
+
+    if (bestMatch && fleet) {
+      // Update existing fleet based on this kill.
+      return _updateFleet(killmail, kill, system, fleet);
     } else {
       // No matches whatsoever. Create a fleet.
-      fleet = await _createFleet(killmail, kill, system);
+      return _createFleet(killmail, kill, system);
     }
-
-    return fleet;
   }
 
 };

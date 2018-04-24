@@ -37,8 +37,13 @@ module.exports = {
         json: true
       }, async(error, response, body) => {
         if (error) {
+          if (!response || !response.statusCode) {
+            sails.log.error(`[ZkillPush.fetch] No response from RedisQ.`);
+            return resolve();
+          }
+
           sails.log.error(`[ZkillPush.fetch] ${response.statusCode} ${error}`);
-          return reject();
+          return resolve();
         }
 
         // Sometimes the service returns null, see: https://github.com/zKillboard/RedisQ
