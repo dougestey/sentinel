@@ -40,17 +40,18 @@ function init() {
     let now = moment(),
         fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
 
-    Fleet.find({ isActive: true, updatedAt: { '>=' : fiveMinutesAgo } })
+    Fleet.find({ isActive: true, updatedAt: { '<=' : fiveMinutesAgo } })
       .limit(50)
       .then(async(fleets) => {
         for (let fleet of fleets) {
           let lastSeen = moment(fleet.lastSeen),
               now = moment();
 
-          let diff = now.diff(lastSeen, 'minutes');
+          let diff = now.diff(lastSeen);
+          let fleetExpireTimeInMilliseconds = parseInt(process.env.FLEET_EXPIRY_IN_MINUTES) * 60 * 1000;
 
-          if (Math.abs(diff) > parseInt(process.env.FLEET_EXPIRY_IN_MINUTES)) {
-            await Fleet.update(fleet.id, { isActive: false, endTime: new Date().toISOString() });
+          if (diff > fleetExpireTimeInMilliseconds) {
+            await Fleet.update(fleet.id, { isActive: false, endTime: now.toISOString(), updatedAt: now.toISOString() });
 
             if (!fleet.system)
               sails.log.error(`[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`);
@@ -60,7 +61,7 @@ function init() {
 
             Dispatcher.notifySockets(fleet, 'fleet_expire');
           } else {
-            await Fleet.update(fleet.id, { updatedAt: new Date().toISOString() });
+            await Fleet.update(fleet.id, { updatedAt: now.toISOString() });
           }
         }
 
@@ -80,13 +81,15 @@ function init() {
       .populate('characters')
       .then(async(fleets) => {
         for (let fleet of fleets) {
-          let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id, dangerRatio: { '>' : 0 } });
+          if (fleet.characters.length) {
+            let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id, dangerRatio: { '>' : 0 } });
 
-          await Fleet.update(fleet.id, { dangerRatio });
+            await Fleet.update(fleet.id, { dangerRatio });
 
-          fleet = await FleetSerializer.one(fleet.id);
+            fleet = await FleetSerializer.one(fleet.id);
 
-          Dispatcher.notifySockets(fleet, 'fleet');
+            Dispatcher.notifySockets(fleet, 'fleet');
+          }
         }
 
         done(null);
