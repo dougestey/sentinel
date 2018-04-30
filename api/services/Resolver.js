@@ -8,6 +8,12 @@
 let Resolver = {
 
   async position(position, systemId) {
+    if (!position || !systemId) {
+      sails.log.error('[Resolver] ESI failure: Incomplete position data');
+
+      return 'Unknown';
+    }
+
     let response;
 
     try {
