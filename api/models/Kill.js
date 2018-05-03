@@ -17,6 +17,8 @@ module.exports = {
 
     positionName: 'string',
 
+    composition: 'json',
+
     // Relationships
 
     ship: { model: 'type' },
