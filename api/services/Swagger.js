@@ -41,7 +41,7 @@ module.exports = {
           return resolve(false);
         }
 
-        if (!body)
+        if (!body || !body.length || !Array.isArray(body))
           return resolve(false);
 
         let allSystemsGo = true,
