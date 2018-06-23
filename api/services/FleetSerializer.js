@@ -5,9 +5,15 @@ module.exports = {
   async one(id) {
     let fleet = await Fleet.findOne(id)
       .populate('system')
-      .populate('characters')
-      .populate('kills')
-      .populate('system');
+      .populate('characters');
+
+    fleet.kills = await Kill.find({ fleet: fleet.id })
+      .populate('ship')
+      .populate('victim')
+      .populate('system')
+      .populate('fleet')
+      .sort('time DESC')
+      .limit(10);
 
     let resolvedChars = [];
 
