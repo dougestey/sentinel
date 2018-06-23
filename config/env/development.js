@@ -12,6 +12,8 @@ module.exports = {
     datastore: 'sentinel'
   },
 
-  port: 8081
+  port: 8081,
+
+  hookTimeout: 60000
 
 };

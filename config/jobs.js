@@ -56,8 +56,7 @@ function init() {
             if (!fleet.system)
               sails.log.error(`[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`);
 
-            let system = await System.findOne(fleet.system);
-            fleet.system = system;
+            fleet = await FleetSerializer.one(fleet.id);
 
             Dispatcher.notifySockets(fleet, 'fleet_expire');
           } else {
@@ -70,8 +69,12 @@ function init() {
   });
 
   jobs.process('determine_fleet_threat_level', (job, done) => {
+    let now = moment(),
+        fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
+
     Fleet.find({
         isActive: true,
+        updatedAt: { '<=' : fiveMinutesAgo },
         or: [
           { dangerRatio: null },
           { dangerRatio: 0 }

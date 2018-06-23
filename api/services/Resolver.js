@@ -44,7 +44,6 @@ let Resolver = {
   },
 
   async composition(ids, characters) {
-
     // ids: [] of pilots { character_id, ship_type_id }
     // characters: [] of character records
 
@@ -55,17 +54,17 @@ let Resolver = {
       shipTypeIds.push(shipTypeId);
     });
 
-    let resolvedShipTypes = await Swagger.names(_.uniq(shipTypeIds));
+    let ships = await Swagger.names(_.uniq(shipTypeIds));
 
     _.forEach(ids, (shipTypeId, characterId) => {
       let charIndex = _.findIndex(characters, 'characterId', parseInt(characterId)),
-          shipIndex = _.findIndex(resolvedShipTypes, 'id', shipTypeId);
+          shipIndex = _.findIndex(ships, 'id', shipTypeId);
 
       if (charIndex !== -1)
-        characters[charIndex].ship = resolvedShipTypes[shipIndex];
+        characters[charIndex].ship = ships[shipIndex];
     });
 
-    return characters;
+    return { characters, ships };
   }
 
 };
