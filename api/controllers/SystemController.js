@@ -28,6 +28,7 @@ module.exports = {
     let kills = await Kill.find({ system: system.id })
       .populate('ship')
       .populate('victim')
+      .populate('system')
       .populate('fleet')
       .sort('time DESC')
       .limit(10);
@@ -49,7 +50,6 @@ module.exports = {
     return res.status(200).json(
       {
         systemId,
-        system,
         fleets: resolvedFleets,
         kills
       }
