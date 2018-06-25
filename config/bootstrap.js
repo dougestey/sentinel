@@ -17,7 +17,7 @@ module.exports.bootstrap = async function(done) {
     await Swagger.initialize();
 
   // Job queue kickoff (config/jobs.js)
-  sails.config.jobs.init();
+  //sails.config.jobs.init();
 
   // Needed for Sails to complete lift.
   return done();
