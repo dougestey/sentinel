@@ -13,7 +13,7 @@ let ZkillJobs = {
   },
 
   readKillStream() {
-    let job = sails.config.jobs.create('read_kill_stream').ttl(twoMinutes);
+    let job = sails.config.jobs.create('read_kill_stream').ttl(twoMinutes).attempts(5);
 
     job.on('failed', function(err) {
       sails.log.error('[Zkill.readKillStream] Job failed');

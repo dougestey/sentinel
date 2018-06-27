@@ -5,6 +5,8 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
+let moment = require('moment');
+
 module.exports = {
 
   attributes: {
@@ -45,7 +47,9 @@ module.exports = {
 
     // Meta
 
-    meta: 'json'
+    lastFleetHealthCheck: { type: 'string', defaultsTo: moment().subtract(5, 'minutes').toISOString() },
+
+    lastFleetThreatLevelCheck: { type: 'string', defaultsTo: moment().subtract(5, 'minutes').toISOString() },
 
   },
 
