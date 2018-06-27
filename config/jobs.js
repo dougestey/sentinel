@@ -40,7 +40,10 @@ function init() {
     let now = moment(),
         fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
 
-    Fleet.find({ isActive: true, updatedAt: { '<=' : fiveMinutesAgo } })
+    Fleet.find({
+      isActive: true,
+      lastFleetHealthCheck : { '<=' : fiveMinutesAgo }
+    })
       .limit(50)
       .then(async(fleets) => {
         for (let fleet of fleets) {
@@ -51,7 +54,11 @@ function init() {
           let fleetExpireTimeInMilliseconds = parseInt(process.env.FLEET_EXPIRY_IN_MINUTES) * 60 * 1000;
 
           if (diff > fleetExpireTimeInMilliseconds) {
-            await Fleet.update(fleet.id, { isActive: false, endTime: now.toISOString(), updatedAt: now.toISOString() });
+            await Fleet.update(fleet.id, {
+              isActive: false,
+              endTime: now.toISOString(),
+              lastFleetHealthCheck: now.toISOString()
+            });
 
             if (!fleet.system)
               sails.log.error(`[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`);
@@ -60,7 +67,7 @@ function init() {
 
             Dispatcher.notifySockets(fleet, 'fleet_expire');
           } else {
-            await Fleet.update(fleet.id, { updatedAt: now.toISOString() });
+            await Fleet.update(fleet.id, { lastFleetHealthCheck: now.toISOString() });
           }
         }
 
@@ -74,11 +81,7 @@ function init() {
 
     Fleet.find({
         isActive: true,
-        updatedAt: { '<=' : fiveMinutesAgo },
-        or: [
-          { dangerRatio: null },
-          { dangerRatio: 0 }
-        ]
+        lastFleetThreatLevelCheck : { '<=' : fiveMinutesAgo }
       })
       .limit(25)
       .populate('characters')
@@ -86,8 +89,9 @@ function init() {
         for (let fleet of fleets) {
           if (fleet.characters.length) {
             let dangerRatio = await Character.avg('dangerRatio', { fleet: fleet.id, dangerRatio: { '>' : 0 } });
+            let lastFleetThreatLevelCheck = moment().toISOString();
 
-            await Fleet.update(fleet.id, { dangerRatio });
+            await Fleet.update(fleet.id, { dangerRatio, lastFleetThreatLevelCheck });
 
             fleet = await FleetSerializer.one(fleet.id);
 
