@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    characterId: { type: 'number', unique: true },
+    id: { type: 'number', autoIncrement: false, required: true },
 
     name: 'string',
 

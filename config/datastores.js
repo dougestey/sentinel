@@ -16,10 +16,30 @@
 module.exports.datastores = {
 
   sentinel: {
-    adapter: 'sails-mongo',
+    adapter: 'sails-postgresql',
     host: '127.0.0.1',
-    port: 27017,
-    database: 'sentinel'
+    port: 5432,
+    database: 'sentinel',
+    user: 'sentinel',
+    password: 'sentinel'
   },
+
+  sentinelDev: {
+    adapter: 'sails-postgresql',
+    host: '127.0.0.1',
+    port: 5432,
+    database: 'sentinel_dev',
+    user: 'sentinel',
+    password: 'sentinel'
+  },
+
+  sde: {
+    adapter: 'sails-postgresql',
+    host: '127.0.0.1',
+    port: 5432,
+    database: 'eve',
+    user: 'eve',
+    password: 'eve'
+  }
 
 };
