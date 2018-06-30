@@ -7,7 +7,8 @@
 
 let ESI = require('eve-swagger-simple'),
     request = require('request'),
-    qs = require('qs');
+    qs = require('qs'),
+    moment = require('moment');
 
 let _endpointIsNeeded = (endpoint) => {
   let requiredEndpoints = [
@@ -122,6 +123,30 @@ module.exports = {
       })
       .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.character] Race condition: Tried to create a character that already exists. ${e}`) })
       .fetch();
+    } else {
+      let lastEsiUpdate = moment(localCharacter.lastEsiUpdate),
+          now = moment();
+
+      let diff = now.diff(lastEsiUpdate);
+      let maxCacheTime = parseInt(process.env.CACHE_CHARACTERS_IN_DAYS) * 24 * 60 * 60 * 1000;
+
+      if (diff > maxCacheTime) {
+        let {
+          corporation_id: corporationId = null,
+          alliance_id: allianceId = null
+        } = await ESI.request(`/characters/${characterId}`);
+
+        let alliance = await Swagger.alliance(allianceId),
+          corporation = await Swagger.corporation(corporationId, alliance);
+
+        localCharacter = await Character.update(localCharacter.id, {
+          corporation: corporation ? corporation.id : null,
+          alliance: alliance ? alliance.id : null,
+          lastEsiUpdate: now.toISOString()
+        }).fetch();
+
+        localCharacter = _.first(localCharacter);
+      }
     }
 
     return localCharacter;
