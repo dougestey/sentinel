@@ -7,12 +7,26 @@
 
 module.exports = {
 
+  datastore: 'sde',
+
+  tableName: 'invTypes',
+
   attributes: {
 
-    typeId: { type: 'number', unique: true },
+    createdAt: false,
 
-    name: 'string',
+    updatedAt: false,
+
+    id: {
+      columnName: 'typeID',
+      type: 'number',
+      autoIncrement: false,
+      required: true
+    },
+
+    name: { columnName: 'typeName', type: 'string' },
+
+    description: 'string',
 
   }
-
 };

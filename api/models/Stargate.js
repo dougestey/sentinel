@@ -5,6 +5,7 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
+// TODO: Determine where this lies in the SDE
 module.exports = {
 
   attributes: {
