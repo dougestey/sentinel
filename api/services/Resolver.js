@@ -33,10 +33,15 @@ let Resolver = {
     if (!itemName) {
       let type = await Swagger.type(typeId);
 
-      if (type && type.name && type.name.indexOf('Stargate') !== -1) {
-        let { name } = await Swagger.stargate(itemId);
+      if (type && type.name) {
+        if (type.name.indexOf('Stargate') !== -1) {
+          let { name } = await Swagger.stargate(itemId);
+          let { name: systemName } = await Swagger.system(systemId);
 
-        itemName = name;
+          itemName = `${systemName} - ${name}`;
+        } else {
+          itemName = type.name;
+        }
       }
     }
 

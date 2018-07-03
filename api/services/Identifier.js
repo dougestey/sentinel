@@ -102,8 +102,11 @@ let _updateFleet = async(fleet, kill, system) => {
 
   // So now we have activeCharacters[ids] and activeComposition {charId:shipTypeId}
   // If this is the newest kill for the fleet, update the fleet's last seen time.
+  // Its location should also be updated. Composition and characters are still
+  // valid due to the latest kill query above.
   if (fleet.lastSeen < kill.time) {
     fleet.lastSeen = kill.time;
+    fleet.system = system;
   }
 
   // Update the fleet's collection of characters. This will drop expired ones.
@@ -112,8 +115,8 @@ let _updateFleet = async(fleet, kill, system) => {
   // Update other attributes on the fleet
   await Fleet.update(fleet.id, {
     lastSeen: fleet.lastSeen,
+    system: fleet.system,
     composition,
-    system 
   });
 
   // Serialize and return
