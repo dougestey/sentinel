@@ -23,6 +23,8 @@ module.exports = {
 
     fleet: { model: 'fleet' },
 
+    history: { collection: 'fleet', via: 'history' },
+
     // Meta
 
     lastEsiUpdate: 'string',

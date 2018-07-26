@@ -8,8 +8,8 @@ let ZkillJobs = {
     this.readKillStream();
     this.updateDangerRatios();
 
-    setInterval(this.updateDangerRatios, everyThirtySeconds);
     // Kill stream jobs are kicked off by themselves every time one finishes.
+    setInterval(this.updateDangerRatios, everyThirtySeconds);
   },
 
   readKillStream() {

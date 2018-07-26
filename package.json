@@ -14,8 +14,8 @@
     "qs": "^6.5.1",
     "redis": "^2.8.0",
     "request": "^2.83.0",
-    "sails": "1.0.0-45",
-    "sails-hook-orm": "^2.0.0-16",
+    "sails": "1.0.2",
+    "sails-hook-orm": "^2.0.0-22",
     "sails-hook-sockets": "^1.4.0",
     "sails-postgresql": "^1.0.1",
     "socket.io-redis": "5.2.0"

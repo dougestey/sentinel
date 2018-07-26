@@ -5,9 +5,15 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
+let datastore = 'sdeDev';
+
+if (process.env.NODE_ENV === 'production') {
+  datastore = 'sde';
+}
+
 module.exports = {
 
-  datastore: 'sde',
+  datastore,
 
   tableName: 'invTypes',
 
