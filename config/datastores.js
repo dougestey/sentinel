@@ -40,6 +40,15 @@ module.exports.datastores = {
     database: 'eve',
     user: 'eve',
     password: 'eve'
+  },
+
+  sdeDev: {
+    adapter: 'sails-postgresql',
+    host: '127.0.0.1',
+    port: 5432,
+    database: 'eve_dev',
+    user: 'eve',
+    password: 'eve'
   }
 
 };

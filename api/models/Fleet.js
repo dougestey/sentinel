@@ -43,6 +43,8 @@ module.exports = {
 
     characters: { collection: 'character', via: 'fleet' },
 
+    history: { collection: 'character', via: 'history' },
+
     kills: { collection: 'kill', via: 'fleet' },
 
     // Meta

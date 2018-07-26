@@ -7,6 +7,8 @@
 
 // Takes a set of characterIds, resolves them to local records,
 // and returns an array of local ids.
+
+// TODO: Remove entirely
 let _resolveCharactersToIds = async(ids) => {
   let resolved = [];
 
@@ -142,7 +144,7 @@ let Identifier = {
     let fleetIds = [];
 
     for (let characterId of attackersWithIds) {
-      let record = await Character.findOne({ characterId });
+      let record = await Character.findOne(characterId);
 
       if (record && record.fleet)
         fleetIds.push(record.fleet);
@@ -176,7 +178,7 @@ let Identifier = {
     let candidates = fleets.map((candidate) => {
       let { id, characters } = candidate;
 
-      characters = characters.map((c) => c.characterId);
+      characters = characters.map((c) => c.id);
 
       let mostPilots, leastPilots;
 

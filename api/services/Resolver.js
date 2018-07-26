@@ -62,7 +62,7 @@ let Resolver = {
     let ships = await Swagger.names(_.uniq(shipTypeIds));
 
     _.forEach(ids, (shipTypeId, characterId) => {
-      let charIndex = _.findIndex(characters, 'characterId', parseInt(characterId)),
+      let charIndex = _.findIndex(characters, 'id', parseInt(characterId)),
           shipIndex = _.findIndex(ships, 'id', shipTypeId);
 
       if (charIndex !== -1)

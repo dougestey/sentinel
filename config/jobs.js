@@ -8,12 +8,19 @@
 
 let kue = require('kue'),
     moment = require('moment');
+    port = 6667,
+    webUiPort = 6464;
+
+if (process.env.NODE_ENV === 'production') {
+  port = 6666;
+  webUiPort = 6564;
+}
 
 let jobs = kue.createQueue({
-      prefix: 'kue',
+      prefix: 'sentinel',
       redis: {
         host: '127.0.0.1',
-        port: 6666,
+        port,
         auth: ''
       },
       disableSearch: true
@@ -22,7 +29,7 @@ let jobs = kue.createQueue({
 let ZkillJobs = require('../jobs/ZkillJobs');
 
 // ui for jobs
-kue.app.listen(6564);
+kue.app.listen(webUiPort);
 
 // give kue workers time to finish active job
 process.once('SIGTERM', function() {
@@ -149,9 +156,11 @@ function init() {
   //        worker process
 
   // Interval Jobs
-  require('../jobs/ZkillJobs').kickoff();
-  require('../jobs/FleetJobs').kickoff();
-  require('../jobs/SwaggerJobs').kickoff();
+  if (process.env.TRACK_ENABLED === 'true') {
+    require('../jobs/ZkillJobs').kickoff();
+    require('../jobs/FleetJobs').kickoff();
+    require('../jobs/SwaggerJobs').kickoff();
+  }
 
   // remove jobs once completed
   jobs.on('job complete', function(id) {
