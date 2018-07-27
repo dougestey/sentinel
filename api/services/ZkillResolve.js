@@ -43,7 +43,7 @@ module.exports = {
         positionRes;
 
     try {
-      shipRes = await Swagger.type(shipTypeId);
+      shipRes = await Type.findOne(shipTypeId);
     } catch(e) {
       sails.log.error('[ZkillResolve] ESI failure.');
       sails.log.error(e);
@@ -59,7 +59,7 @@ module.exports = {
     }
 
     try {
-      systemRes = await Swagger.system(systemId);
+      systemRes = await System.findOne(systemId);
     } catch(e) {
       sails.log.error('[ZkillResolve] ESI failure.');
       sails.log.error(e);

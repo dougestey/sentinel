@@ -13,9 +13,6 @@ require('dotenv-safe').config();
 
 module.exports.bootstrap = async function(done) {
 
-  if (process.env.BOOTSTRAP_DB === 'true')
-    await Swagger.initialize();
-
   // Job queue kickoff (config/jobs.js)
   sails.config.jobs.init();
 

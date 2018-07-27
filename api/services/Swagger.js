@@ -152,57 +152,6 @@ module.exports = {
     return localCharacter;
   },
 
-  async type(typeId) {
-    if (!typeId)
-      return;
-
-    let localType = await Type.findOne(typeId);
-
-    if (!localType) {
-      let { name } = await ESI.request(`/universe/types/${typeId}`);
-
-      localType = await Type.create({
-        id: typeId,
-        name
-      })
-      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.type] Race condition: Tried to create a type that already exists. ${e}`) })
-      .fetch();
-    }
-
-    return localType;
-  },
-
-  async system(systemId) {
-    if (!systemId)
-      return;
-
-    let localSystem = await System.findOne({ systemId });
-
-    // Bootstrap gives us all systems with systemIds. If we don't have a systemId,
-    // we're either not bootstrapped or it doesn't exist.
-    if (!localSystem)
-      return;
-
-    // Rich system information such as name, position, securityStatus comes from
-    // a direct ESI request for that data. After the first time we cache it indefinitely.
-    //
-    // TODO: Improve this check
-    if (!localSystem.name) {
-      let system = await ESI.request(`/universe/systems/${systemId}`);
-
-      localSystem = await System.update({ systemId }, {
-        name: system.name,
-        position: system.position,
-        securityStatus: system.security_status,
-        securityClass: system.security_class
-      }).fetch();
-
-      localSystem = _.first(localSystem);
-    }
-
-    return localSystem;
-  },
-
   async stargate(stargateId) {
     if (!stargateId)
       return;
