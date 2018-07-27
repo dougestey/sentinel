@@ -7,8 +7,9 @@
 
 // Takes a set of characterIds, resolves them to local records,
 // and returns an array of local ids.
-
-// TODO: Remove entirely
+//
+// Now that Sentinel uses PostgreSQL with real character IDs as unique
+// identifiers, this function should return the same thing passed to it.
 let _resolveCharactersToIds = async(ids) => {
   let resolved = [];
 
@@ -80,6 +81,7 @@ let _createFleet = async(killmail, kill, system) => {
   .fetch();
 
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
+  await Fleet.addToCollection(fleet.id, 'history').members(characters);
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
   return FleetSerializer.one(fleet.id);
@@ -95,8 +97,11 @@ let _updateFleet = async(fleet, kill, system) => {
 
   // Then we fetch the three latest kills in order to determine who's actively in the fleet.
   let latestKills = await Kill.find({ fleet: fleet.id }).sort('time DESC').limit(3);
+  let existingCharacters = await Character.find({ fleet: fleet.id });
   let activeCharacters = _determineActiveCharacters(latestKills);
   let composition = _determineActiveComposition(latestKills);
+
+  existingCharacters = existingCharacters.map((character) => character.id);
 
   // Convert characterIds to local ids. This also creates character records for those
   // that Sentinel's DB isn't already aware of.
@@ -110,6 +115,10 @@ let _updateFleet = async(fleet, kill, system) => {
     fleet.lastSeen = kill.time;
     fleet.system = system;
   }
+
+  // Ensure we're preserving character fleet history.
+  await Fleet.addToCollection(fleet.id, 'history').members(existingCharacters);
+  await Fleet.addToCollection(fleet.id, 'history').members(activeCharacters);
 
   // Update the fleet's collection of characters. This will drop expired ones.
   await Fleet.replaceCollection(fleet.id, 'characters').members(activeCharacters);

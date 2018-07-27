@@ -9,7 +9,7 @@
 let kue = require('kue'),
     moment = require('moment');
     port = 6667,
-    webUiPort = 6464;
+    webUiPort = 6574;
 
 if (process.env.NODE_ENV === 'production') {
   port = 6666;
@@ -88,7 +88,7 @@ function init() {
 
     Fleet.find({
         isActive: true,
-        lastFleetThreatLevelCheck : { '<=' : fiveMinutesAgo }
+        lastFleetThreatLevelCheck: { '<=' : fiveMinutesAgo }
       })
       .limit(25)
       .populate('characters')
@@ -127,7 +127,16 @@ function init() {
   });
 
   jobs.process('update_danger_ratios', (job, done) => {
-    Character.find({ dangerRatio: 0, lastZkillUpdate: '' })
+    let now = moment(),
+        maxCacheTime = parseInt(process.env.CACHE_CHARACTERS_IN_DAYS),
+        threshold = now.subtract(maxCacheTime, 'days').toISOString();
+
+    Character.find({
+        or: [
+          { lastZkillUpdate: '' },
+          { lastZkillUpdate: { '<=' : threshold } }
+        ]
+      })
       .limit(10)
       .then((characters) => {
         if (characters && characters instanceof Error) {
@@ -136,7 +145,7 @@ function init() {
         }
 
         for (let character of characters) {
-          ZkillStats.character(character.characterId)
+          ZkillStats.character(character.id)
             .then(async(stats) => {
               let { dangerRatio } = stats,
                   lastZkillUpdate = new Date().toISOString();
