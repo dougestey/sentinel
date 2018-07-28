@@ -25,7 +25,7 @@ The app will refuse to run without a valid root-level `.env` - see the [example 
 
 And now you're listening for kills and saving them to the DB in real time. RedisQ will remember who you are for up to 3 hours if you go offline, otherwise you're considered a new listener.
 
-Provided it's not firewalled, a frontend to the job queue will be available at http://YOUR_URL:6574.
+Provided it's not firewalled, a frontend to the job queue will be available at `http://<BASE_URL>:6574`.
 
 If you're going to leave this thing running permanently, you should run it `NODE_ENV=production` (i.e. `npm start`).
 
