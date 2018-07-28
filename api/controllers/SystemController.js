@@ -15,7 +15,7 @@ module.exports = {
 
     systemId = parseInt(systemId);
 
-    let system = await Swagger.system(systemId);
+    let system = await System.findOne(systemId);
 
     if (!system)
       return res.notFound();

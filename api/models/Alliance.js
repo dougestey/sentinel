@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    allianceId: { type: 'number', unique: true },
+    id: { type: 'number', autoIncrement: false, required: true },
 
     name: 'string',
 

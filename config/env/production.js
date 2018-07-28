@@ -28,16 +28,6 @@ module.exports = {
   * (https://sailsjs.com/config/datastores)                                 *
   *                                                                         *
   **************************************************************************/
-  datastores: {
-
-    sentinel: {
-      adapter: 'sails-mongo',
-      host: '127.0.0.1',
-      port: 27017,
-      database: 'sentinel'
-    },
-
-  },
 
   models: {
 
@@ -110,74 +100,6 @@ module.exports = {
       // allowOrigins: [
       //   'https://example.com',
       // ]
-    },
-
-  },
-
-  /***************************************************************************
-  *                                                                          *
-  * Configure how your app handles sessions in production.                   *
-  *                                                                          *
-  * (https://sailsjs.com/config/session)                                     *
-  *                                                                          *
-  * > If you have disabled the "session" hook, then you can safely remove    *
-  * > this section from your `config/env/production.js` file.                *
-  *                                                                          *
-  ***************************************************************************/
-  session: {
-
-    /***************************************************************************
-    *                                                                          *
-    * Production session store configuration.                                  *
-    *                                                                          *
-    * Uncomment the following lines to finish setting up a package called      *
-    * "connect-redis" that will use Redis to store and retrieve session data.  *
-    * This makes your app more scalable by allowing you to share sessions      *
-    * across a cluster of multiple Sails/Node.js servers and/or processes.     *
-    * (See http://bit.ly/redis-session-config for more info.)                  *
-    *                                                                          *
-    * > While "connect-redis" is a popular choice for Sails apps, many other   *
-    * > compatible packages (like "connect-mongo") are available on NPM.       *
-    * > (For a full list, see https://sailsjs.com/plugins/sessions)            *
-    *                                                                          *
-    ***************************************************************************/
-    // adapter: 'connect-redis',
-    // url: 'redis://user:password@localhost:6379/dbname',
-    //--------------------------------------------------------------------------
-    // /\   OR, to avoid checking it in to version control, you might opt to
-    // ||   set sensitive credentials like this using an environment variable.
-    //
-    // For example:
-    // ```
-    // sails_session__url=redis://admin:myc00lpAssw2D@bigsquid.redistogo.com:9562/sessions
-    // ```
-    //
-    //--------------------------------------------------------------------------
-
-    /***************************************************************************
-    *                                                                          *
-    * Production configuration for the session ID cookie.                      *
-    *                                                                          *
-    * Tell browsers (or other user agents) to ensure that session ID cookies   *
-    * are always transmitted via HTTPS, and that they expire 24 hours after    *
-    * they are set.                                                            *
-    *                                                                          *
-    * Note that with `secure: true` set, session cookies will _not_ be         *
-    * transmitted over unsecured (HTTP) connections. Also, for apps behind     *
-    * proxies (like Heroku), the `trustProxy` setting under `http` must be     *
-    * configured in order for `secure: true` to work.                          *
-    *                                                                          *
-    * > While you might want to increase or decrease the `maxAge` or provide   *
-    * > other options, you should always set `secure: true` in production      *
-    * > if the app is being served over HTTPS.                                 *
-    *                                                                          *
-    * Read more:                                                               *
-    * https://sailsjs.com/config/session#?the-session-id-cookie                *
-    *                                                                          *
-    ***************************************************************************/
-    cookie: {
-      // secure: true,
-      maxAge: 24 * 60 * 60 * 1000,  // 24 hours
     },
 
   },

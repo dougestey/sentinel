@@ -31,12 +31,12 @@ let Resolver = {
     // Unfortunately Fuzzworks doesn't give us an itemName for stargates.
     // It does seem to handle belts and stations fine. More testing req'd.
     if (!itemName) {
-      let type = await Swagger.type(typeId);
+      let type = await Type.findOne(typeId);
 
       if (type && type.name) {
         if (type.name.indexOf('Stargate') !== -1) {
           let { name } = await Swagger.stargate(itemId);
-          let { name: systemName } = await Swagger.system(systemId);
+          let { name: systemName } = await System.findOne(systemId);
 
           itemName = `${systemName} - ${name}`;
         } else {
@@ -62,7 +62,7 @@ let Resolver = {
     let ships = await Swagger.names(_.uniq(shipTypeIds));
 
     _.forEach(ids, (shipTypeId, characterId) => {
-      let charIndex = _.findIndex(characters, 'characterId', parseInt(characterId)),
+      let charIndex = _.findIndex(characters, 'id', parseInt(characterId)),
           shipIndex = _.findIndex(ships, 'id', shipTypeId);
 
       if (charIndex !== -1)

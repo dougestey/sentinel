@@ -101,7 +101,7 @@ module.exports = {
     if (!characterId)
       return;
 
-    let localCharacter = await Character.findOne({ characterId });
+    let localCharacter = await Character.findOne(characterId);
 
     if (!localCharacter) {
       let {
@@ -115,7 +115,7 @@ module.exports = {
           lastEsiUpdate = new Date().toISOString();
 
       localCharacter = await Character.create({
-        characterId,
+        id: characterId,
         name,
         lastEsiUpdate,
         corporation: corporation ? corporation.id : null,
@@ -139,7 +139,7 @@ module.exports = {
         let alliance = await Swagger.alliance(allianceId),
           corporation = await Swagger.corporation(corporationId, alliance);
 
-        localCharacter = await Character.update(localCharacter.id, {
+        localCharacter = await Character.update(characterId, {
           corporation: corporation ? corporation.id : null,
           alliance: alliance ? alliance.id : null,
           lastEsiUpdate: now.toISOString()
@@ -150,57 +150,6 @@ module.exports = {
     }
 
     return localCharacter;
-  },
-
-  async type(typeId) {
-    if (!typeId)
-      return;
-
-    let localType = await Type.findOne({ typeId });
-
-    if (!localType) {
-      let { name } = await ESI.request(`/universe/types/${typeId}`);
-
-      localType = await Type.create({
-        typeId,
-        name
-      })
-      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.type] Race condition: Tried to create a type that already exists. ${e}`) })
-      .fetch();
-    }
-
-    return localType;
-  },
-
-  async system(systemId) {
-    if (!systemId)
-      return;
-
-    let localSystem = await System.findOne({ systemId });
-
-    // Bootstrap gives us all systems with systemIds. If we don't have a systemId,
-    // we're either not bootstrapped or it doesn't exist.
-    if (!localSystem)
-      return;
-
-    // Rich system information such as name, position, securityStatus comes from
-    // a direct ESI request for that data. After the first time we cache it indefinitely.
-    //
-    // TODO: Improve this check
-    if (!localSystem.name) {
-      let system = await ESI.request(`/universe/systems/${systemId}`);
-
-      localSystem = await System.update({ systemId }, {
-        name: system.name,
-        position: system.position,
-        securityStatus: system.security_status,
-        securityClass: system.security_class
-      }).fetch();
-
-      localSystem = _.first(localSystem);
-    }
-
-    return localSystem;
   },
 
   async stargate(stargateId) {
@@ -226,7 +175,7 @@ module.exports = {
     if (!corporationId)
       return;
 
-    let localCorporation = await Corporation.findOne({ corporationId });
+    let localCorporation = await Corporation.findOne(corporationId);
 
     if (!localCorporation) {
       let { name,
@@ -235,7 +184,7 @@ module.exports = {
           } = await ESI.request(`/corporations/${corporationId}`);
 
       localCorporation = await Corporation.create({
-        corporationId,
+        id: corporationId,
         name,
         ticker,
         memberCount,
@@ -252,19 +201,14 @@ module.exports = {
     if (!allianceId)
       return;
 
-    let localAlliance = await Alliance.findOne({ allianceId });
+    let localAlliance = await Alliance.findOne(allianceId);
 
-    if (!localAlliance || !localAlliance.name) {
+    if (!localAlliance) {
       let { name, ticker } = await ESI.request(`/alliances/${allianceId}`);
 
-      if (!localAlliance) {
-        localAlliance = await Alliance.create({ allianceId, name, ticker })
-          .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`) })
-          .fetch();
-      } else {
-        localAlliance = await Alliance.update({ allianceId }, { name, ticker }).fetch();
-        localAlliance = _.first(localAlliance);
-      }
+      localAlliance = await Alliance.create({ id: allianceId, name, ticker })
+        .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`) })
+        .fetch();
     }
 
     return localAlliance;
