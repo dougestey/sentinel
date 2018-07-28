@@ -17,7 +17,7 @@
     "sails": "1.0.2",
     "sails-hook-orm": "^2.0.0-22",
     "sails-hook-sockets": "^1.4.0",
-    "sails-postgresql": "^1.0.1",
+    "sails-postgresql": "https://github.com/dougestey/sails-postgresql",
     "socket.io-redis": "5.2.0"
   },
   "scripts": {
