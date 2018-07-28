@@ -27,7 +27,7 @@ module.exports = {
   },
 
   async active (req, res) {
-    let fleets = await Fleet.find({ isActive: true }).limit(150)
+    let fleets = await Fleet.find({ isActive: true })
       .populate('characters')
       .populate('history')
       .populate('kills');
