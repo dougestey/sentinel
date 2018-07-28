@@ -5,14 +5,34 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
+let datastore = 'sdeDev';
+
+if (process.env.NODE_ENV === 'production') {
+  datastore = 'sde';
+}
+
 module.exports = {
+
+  datastore,
+
+  tableName: 'invTypes',
 
   attributes: {
 
-    typeId: { type: 'number', unique: true },
+    createdAt: false,
 
-    name: 'string',
+    updatedAt: false,
+
+    id: {
+      columnName: 'typeID',
+      type: 'number',
+      autoIncrement: false,
+      required: true
+    },
+
+    name: { columnName: 'typeName', type: 'string' },
+
+    description: 'string',
 
   }
-
 };

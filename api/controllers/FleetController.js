@@ -24,6 +24,22 @@ module.exports = {
     }
 
     return res.status(200).json(fleet);
+  },
+
+  async active (req, res) {
+    let fleets = await Fleet.find({ isActive: true }).limit(150)
+      .populate('characters')
+      .populate('history')
+      .populate('kills');
+
+    for (let fleet of fleets) {
+      let system = await System.findOne(fleet.system)
+        .populate('region');
+
+      fleet.system = system;
+    }
+
+    return res.status(200).json(fleets);
   }
 
 };

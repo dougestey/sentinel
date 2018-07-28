@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    characterId: { type: 'number', unique: true },
+    id: { type: 'number', autoIncrement: false, required: true },
 
     name: 'string',
 
@@ -22,6 +22,8 @@ module.exports = {
     alliance: { model: 'alliance' },
 
     fleet: { model: 'fleet' },
+
+    history: { collection: 'fleet', via: 'history' },
 
     // Meta
 
