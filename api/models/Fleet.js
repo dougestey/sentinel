@@ -33,9 +33,9 @@ module.exports = {
       ]
     },
 
-    efficiency: 'number',
+    efficiency: { type: 'ref', columnType: 'decimal' },
 
-    dangerRatio: 'number',
+    dangerRatio: { type: 'ref', columnType: 'decimal' },
 
     // Relationships
 

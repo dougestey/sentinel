@@ -4,8 +4,12 @@ module.exports = {
   // Also resolve shiptypes.
   async one(id) {
     let fleet = await Fleet.findOne(id)
-      .populate('system')
-      .populate('characters');
+      .populate('system');
+
+    fleet.characters = await Character.find({ fleet: fleet.id })
+      .populate('corporation')
+      .populate('alliance')
+      .limit(100);
 
     fleet.kills = await Kill.find({ fleet: fleet.id })
       .populate('ship')
@@ -13,27 +17,10 @@ module.exports = {
       .populate('system')
       .populate('fleet')
       .sort('time DESC')
-      .limit(10);
-
-    let resolvedChars = [];
-
-    for (let character of fleet.characters) {
-      let corporation = await Corporation.findOne(character.corporation),
-          alliance;
-
-      if (character.alliance)
-        alliance = await Alliance.findOne(character.alliance);
-
-      character.corporation = corporation;
-      character.alliance = alliance;
-
-      resolvedChars.push(character);
-    }
-
-    await Promise.all(resolvedChars);
+      .limit(50);
 
     // Now let's resolve the ship type IDs for each character.
-    let { characters, ships } = await Resolver.composition(fleet.composition, resolvedChars);
+    let { characters, ships } = await Resolver.composition(fleet.composition, fleet.characters);
 
     fleet.characters = characters;
     fleet.ships = ships;

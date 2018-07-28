@@ -2592,9 +2592,9 @@ sails-hook-sockets@^1.4.0:
     socket.io "2.0.3"
     uid2 "0.0.3"
 
-sails-postgresql@^1.0.1:
+"sails-postgresql@https://github.com/dougestey/sails-postgresql":
   version "1.0.1"
-  resolved "https://registry.yarnpkg.com/sails-postgresql/-/sails-postgresql-1.0.1.tgz#2207fae5b1a5f95989b8e47cb25575833bd9609f"
+  resolved "https://github.com/dougestey/sails-postgresql#f3ea0fbc6c5f0cb6637f2231193438f9c8d46fd8"
   dependencies:
     "@sailshq/lodash" "^3.10.2"
     async "2.0.1"
