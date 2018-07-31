@@ -27,6 +27,10 @@ module.exports = {
 
     name: { columnName: 'regionName', type: 'string' },
 
+    x: { columnType: 'decimal', type: 'number' },
+
+    y: { columnType: 'decimal', type: 'number' },
+
   }
 
 };

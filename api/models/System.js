@@ -34,6 +34,10 @@ module.exports = {
 
     securityStatus: { columnName: 'security', type: 'number' },
 
+    x: { columnType: 'decimal', type: 'number' },
+
+    y: { columnType: 'decimal', type: 'number' },
+
     // Relationships
 
     constellation: { columnName: 'constellationID', model: 'constellation' },

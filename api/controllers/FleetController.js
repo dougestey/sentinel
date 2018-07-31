@@ -27,19 +27,16 @@ module.exports = {
   },
 
   async active (req, res) {
-    let fleets = await Fleet.find({ isActive: true })
-      .populate('characters')
-      .populate('history')
-      .populate('kills');
+    let fleets = await Fleet.find({ isActive: true });
+    let resolved = [];
 
     for (let fleet of fleets) {
-      let system = await System.findOne(fleet.system)
-        .populate('region');
+      let resolvedFleet = await FleetSerializer.one(fleet.id);
 
-      fleet.system = system;
+      resolved.push(resolvedFleet);
     }
 
-    return res.status(200).json(fleets);
+    return res.status(200).json(resolved);
   }
 
 };
