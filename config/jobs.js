@@ -26,8 +26,6 @@ let jobs = kue.createQueue({
       disableSearch: true
     });
 
-let ZkillJobs = require('../jobs/ZkillJobs');
-
 // ui for jobs
 kue.app.listen(webUiPort);
 
@@ -38,6 +36,10 @@ process.once('SIGTERM', function() {
     process.exit(0);
   }, 5000);
 });
+
+let _shouldTrack = (package) => {
+  return !package.zkb.npc || process.env.TRACK_NPC === 'true';
+};
 
 function init() {
 
@@ -112,18 +114,25 @@ function init() {
 
   // Zkill
 
-  jobs.process('read_kill_stream', (job, done) => {
-    ZkillPush.fetch()
-      .then((result) => {
-        if (result && result instanceof Error) {
-          done(result);
-        } else {
-          done(null, result);
+  jobs.process('process_zkill_package', (job, done) => {
+    Package.findOne(job.data.id)
+      .then((package) => {
+        let resolvedPackage = JSON.parse(package.body);
+
+        if (!_shouldTrack(resolvedPackage)) {
+          sails.log.debug(`[Zkill.processZkillPackage] Not tracking ${resolvedPackage.killmail_id}`);
+
+          return done();
         }
 
-        // Keep movin' buddy, these kills ain't gonna track themselves.
-        setTimeout(ZkillJobs.readKillStream, 1000);
-      });
+        ZkillResolve.kill(resolvedPackage)
+          .then(() => {
+            done();
+          })
+          .catch((err) => {
+            done(err)
+          });
+      })
   });
 
   jobs.process('update_danger_ratios', (job, done) => {
