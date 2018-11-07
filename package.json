@@ -1,7 +1,7 @@
 {
   "name": "sentinel",
   "private": false,
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "A WebSocket-compatible fleet tracker for EVE Online.",
   "keywords": [],
   "dependencies": {
@@ -18,7 +18,8 @@
     "sails-hook-orm": "^2.0.0-22",
     "sails-hook-sockets": "^1.4.0",
     "sails-postgresql": "https://github.com/dougestey/sails-postgresql",
-    "socket.io-redis": "5.2.0"
+    "socket.io-redis": "5.2.0",
+    "ws": "^6.1.0"
   },
   "scripts": {
     "start": "NODE_ENV=production node app.js"

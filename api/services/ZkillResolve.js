@@ -9,12 +9,7 @@ let moment = require('moment');
 
 module.exports = {
 
-  async kill(package) {
-
-    let { killmail } = package;
-
-    if (!killmail)
-      return;
+  async kill(killmail) {
 
     let {
       killmail_id: killId,
@@ -31,8 +26,12 @@ module.exports = {
     // Check for local record. If it exists, cancel further logic.
     let existingRecord = await Kill.findOne({ killId });
 
-    if (existingRecord || !characterId || !shipTypeId || !systemId) {
-      sails.log.debug(`[ZkillResolve.kill] Issue with record: ${existingRecord} || characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
+    if (existingRecord) {
+      return sails.log.debug(`[ZkillResolve.kill] Ignoring ${killId} - already in database.`);
+    }
+
+    if (!characterId || !shipTypeId || !systemId) {
+      sails.log.debug(`[ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
       sails.log.debug('[ZkillResolve.kill] Cancelling resolve.');
       return;
     }
@@ -118,6 +117,9 @@ module.exports = {
       Dispatcher.notifySockets(fleet, 'fleet');
 
     Dispatcher.notifySockets(kill, 'kill');
+
+    return kill;
+
   }
 
 };
