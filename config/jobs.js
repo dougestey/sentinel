@@ -115,18 +115,22 @@ function init() {
   // Zkill
 
   jobs.process('process_zkill_package', (job, done) => {
+    sails.log.debug(`[${new Date().toLocaleTimeString()}] [Kue] Processing job for ${job.data.id}`);
+
     Package.findOne(job.data.id)
       .then((package) => {
         let resolvedPackage = JSON.parse(package.body);
 
         if (!_shouldTrack(resolvedPackage)) {
-          sails.log.debug(`[Zkill.processZkillPackage] Not tracking ${resolvedPackage.killmail_id}`);
+          sails.log.debug(`[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Not tracking ${resolvedPackage.killmail_id}.`);
 
           return done();
         }
 
         ZkillResolve.kill(resolvedPackage)
           .then(() => {
+            sails.log.debug(`[${new Date().toLocaleTimeString()}] [Kue] Job for ${job.data.id} finished.`);
+
             done();
           })
           .catch((err) => {
@@ -149,7 +153,7 @@ function init() {
       .limit(10)
       .then((characters) => {
         if (characters && characters instanceof Error) {
-          sails.log.error(`[Job.update_danger_ratios] ${characters}`);
+          sails.log.error(`[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${characters}`);
           done(characters);
         }
 
@@ -162,7 +166,7 @@ function init() {
               await Character.update(character.id, { dangerRatio, lastZkillUpdate });
             })
             .catch((error) => {
-              sails.log.error(`[Job.update_danger_ratios] ${error}`);
+              sails.log.error(`[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${error}`);
             });
         }
 
@@ -184,7 +188,7 @@ function init() {
   jobs.on('job complete', function(id) {
     kue.Job.get(id, function(err, job) {
       if (err) {
-        console.log(`Job ${id} failed: ${err}`);
+        console.log(`[${new Date().toLocaleTimeString()}] [Kue] Job ${id} failed: ${err}`);
       }
 
       if (err) { return; }

@@ -1,7 +1,7 @@
 /**
  * Kill.js
  *
- * @description :: Kill report as retrieved from the zKill/Push service.
+ * @description :: Resolved kill report from zKillboard.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 

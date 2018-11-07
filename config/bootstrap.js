@@ -16,7 +16,7 @@ module.exports.bootstrap = async function(done) {
   // Job queue kickoff (config/jobs.js)
   sails.config.jobs.init();
 
-  ZkillSocket.initialize();
+  ZkillSocket.connect();
 
   // Needed for Sails to complete lift.
   return done();

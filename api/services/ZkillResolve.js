@@ -27,12 +27,12 @@ module.exports = {
     let existingRecord = await Kill.findOne({ killId });
 
     if (existingRecord) {
-      return sails.log.debug(`[ZkillResolve.kill] Ignoring ${killId} - already in database.`);
+      return sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Ignoring ${killId} - already in database.`);
     }
 
     if (!characterId || !shipTypeId || !systemId) {
-      sails.log.debug(`[ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
-      sails.log.debug('[ZkillResolve.kill] Cancelling resolve.');
+      sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
+      sails.log.debug('[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Cancelling resolve.');
       return;
     }
 
@@ -44,7 +44,7 @@ module.exports = {
     try {
       shipRes = await Type.findOne(shipTypeId);
     } catch(e) {
-      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
       sails.log.error(e);
       return;
     }
@@ -52,7 +52,7 @@ module.exports = {
     try {
       victimRes = await Swagger.character(characterId);
     } catch(e) {
-      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
       sails.log.error(e);
       return;
     }
@@ -60,7 +60,7 @@ module.exports = {
     try {
       systemRes = await System.findOne(systemId);
     } catch(e) {
-      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
       sails.log.error(e);
       return;
     }
@@ -68,7 +68,7 @@ module.exports = {
     try {
       positionRes = await Resolver.position(position, systemId);
     } catch(e) {
-      sails.log.error('[ZkillResolve] ESI failure.');
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
       sails.log.error(e);
       return;
     }
@@ -95,7 +95,7 @@ module.exports = {
       victim,
       system
     })
-    .intercept('E_UNIQUE', (e) => { return sails.log.error(`[ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`) })
+    .intercept('E_UNIQUE', (e) => { return sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`) })
     .fetch();
 
     let now = moment(),

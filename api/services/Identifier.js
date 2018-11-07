@@ -13,7 +13,7 @@
 let _resolveCharactersToIds = async(ids) => {
   let resolved = [];
 
-  sails.log.debug(`[Identifier._resolveCharactersToIds] Resolving ${ids.length} characters...`);
+  sails.log.silly(`[Identifier._resolveCharactersToIds] Resolving ${ids.length} characters...`);
 
   for (let characterId of ids) {
     let character;
@@ -21,14 +21,14 @@ let _resolveCharactersToIds = async(ids) => {
     try {
       character = await Swagger.character(characterId);
     } catch(e) {
-      sails.log.error(`[Identifier._resolveCharactersToIds] ${JSON.stringify(e)}`);
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._resolveCharactersToIds] ${JSON.stringify(e)}`);
     }
 
     if (character && character.id)
       resolved.push(character.id);
   }
 
-  sails.log.debug('[Identifier._resolveCharactersToIds] End');
+  sails.log.silly('[Identifier._resolveCharactersToIds] End');
 
   return _.compact(resolved);
 };
@@ -77,7 +77,7 @@ let _createFleet = async(killmail, kill, system) => {
     isActive,
     system
   })
-  .intercept((e) => sails.log.error('Fleet create error:', e))
+  .intercept((e) => sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._createFleet] Fleet create error:`, e))
   .fetch();
 
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
@@ -89,7 +89,7 @@ let _createFleet = async(killmail, kill, system) => {
 
 let _updateFleet = async(fleet, kill, system) => {
   if (!fleet) {
-    return sails.log.error('[Identifier._updateFleet] No fleet to update');
+    return sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._updateFleet] No fleet to update`);
   }
 
   // First we add the kill to the fleet's collection, as it will impact other data.
@@ -148,7 +148,7 @@ let Identifier = {
     if (!attackersWithIds.length)
       return;
 
-    sails.log.debug(`[Identifier.fleet] Fetching active fleet records related to km...`);
+    sails.log.silly(`[Identifier.fleet] Fetching active fleet records related to km...`);
 
     let fleetIds = [];
 
@@ -182,7 +182,7 @@ let Identifier = {
     }
 
     // We have more than one fleet candidate, so let's score them.
-    sails.log.debug(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
+    sails.log.silly(`[Identifier.fleet] Scoring ${fleets.length} fleets...`);
 
     let candidates = fleets.map((candidate) => {
       let { id, characters } = candidate;
@@ -205,7 +205,7 @@ let Identifier = {
       return { id, similarity, size: characters.length };
     });
 
-    sails.log.debug(`[Identifier.fleet] Sorting potential matches...`);
+    sails.log.silly(`[Identifier.fleet] Sorting potential matches...`);
 
     candidates = _.sortByOrder(candidates, ['similarity', 'size'], ['desc', 'desc']);
 

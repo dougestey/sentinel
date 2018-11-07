@@ -20,11 +20,11 @@ module.exports = {
         json: true
       }, (error, response, body) => {
         if (error || !body) {
-          sails.log.error(`[Fuzzworks.nearestCelestial] ${response.statusCode} ${error}`);
+          sails.log.error(`[${new Date().toLocaleTimeString()}] [Fuzzworks.nearestCelestial] ${response.statusCode} ${error}`);
           return reject();
         }
 
-        sails.log.debug(`[Fuzzworks.nearestCelestial] Success.`);
+        sails.log.silly(`[Fuzzworks.nearestCelestial] Success.`);
         sails.log.silly(`[Fuzzworks.nearestCelestial] ${body}`);
 
         return resolve(body);

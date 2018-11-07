@@ -1,9 +1,13 @@
 {
   "name": "sentinel",
   "private": false,
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A WebSocket-compatible fleet tracker for EVE Online.",
-  "keywords": [],
+  "keywords": [
+    "eve online",
+    "eve",
+    "mmorpg"
+  ],
   "dependencies": {
     "async": "2.0.1",
     "dotenv-safe": "^5.0.1",

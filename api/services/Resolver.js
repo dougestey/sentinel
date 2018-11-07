@@ -9,7 +9,7 @@ let Resolver = {
 
   async position(position, systemId) {
     if (!position || !systemId) {
-      sails.log.error('[Resolver] ESI failure: Incomplete position data');
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [Resolver] ESI failure: Incomplete position data`);
 
       return 'Unknown';
     }
@@ -19,7 +19,7 @@ let Resolver = {
     try {
       response = await Fuzzworks.nearestCelestial(position, systemId);
     } catch(e) {
-      sails.log.error(`[Resolver] Fuzzworks failure: ${e}`);
+      sails.log.error(`[${new Date().toLocaleTimeString()}] [Resolver] Fuzzworks failure: ${e}`);
       return 'Unknown';
     }
 
