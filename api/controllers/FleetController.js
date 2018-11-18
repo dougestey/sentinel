@@ -7,21 +7,16 @@
 
 module.exports = {
 
-  async track(req, res) {
-    if (!req.params.fleetId)
+  async findOne(req, res) {
+    if (!req.params.id)
       return res.badRequest();
 
-    let { fleetId } = req.params;
+    let { id } = req.params;
 
-    let fleet = await FleetSerializer.one(fleetId);
+    let fleet = await FleetSerializer.one(id);
 
     if (!fleet)
       return res.notFound();
-
-    // Subscribe sockets to future fleet updates.
-    if (req.isSocket) {
-      Dispatcher.joinPool(req);
-    }
 
     return res.status(200).json(fleet);
   },
