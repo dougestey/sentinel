@@ -17,10 +17,12 @@ module.exports = {
       solar_system_id: systemId,
       victim: {
         character_id: characterId,
+        items,
         position,
         ship_type_id: shipTypeId
       },
-      attackers
+      attackers,
+      zkb: meta
     } = killmail;
 
     // Check for local record. If it exists, cancel further logic.
@@ -91,6 +93,8 @@ module.exports = {
       position,
       positionName,
       composition,
+      items,
+      meta,
       ship,
       victim,
       system

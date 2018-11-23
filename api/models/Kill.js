@@ -17,7 +17,11 @@ module.exports = {
 
     positionName: 'string',
 
+    items: 'json',
+
     composition: 'json',
+
+    meta: 'json',
 
     // Relationships
 
