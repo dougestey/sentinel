@@ -627,6 +627,13 @@ crc@3.4.4:
   resolved "https://registry.yarnpkg.com/crc/-/crc-3.4.4.tgz#9da1e980e3bd44fc5c93bf5ab3da3378d85e466b"
   integrity sha1-naHpgOO9RPxck79as9ozeNheRms=
 
+cron@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/cron/-/cron-1.5.0.tgz#50acb15ec640cff1f6f42091c9df2b81ed303066"
+  integrity sha512-j7zMFLrcSta53xqOvETUt8ge+PM14GtF47gEGJJeVlM6qP24/eWHSgtiWiEiKBR2sHS8xZaBQZq4D7vFXg8dcQ==
+  dependencies:
+    moment-timezone "^0.5.x"
+
 cross-spawn@4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-4.0.2.tgz#7b9247621c23adfdd3856004a823cbe397424d41"
@@ -2101,6 +2108,18 @@ mkdirp@0.5.x, mkdirp@0.x.x, mkdirp@^0.5.0, mkdirp@~0.5.1:
   integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
   dependencies:
     minimist "0.0.8"
+
+moment-timezone@^0.5.x:
+  version "0.5.23"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
+  integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
+  dependencies:
+    moment ">= 2.9.0"
+
+"moment@>= 2.9.0":
+  version "2.22.2"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
+  integrity sha1-PCV/mDn8DpP/UxSWMiOeuQeD/2Y=
 
 moment@^2.20.1:
   version "2.21.0"

@@ -212,6 +212,12 @@ module.exports = {
     }
 
     return localAlliance;
+  },
+
+  async killmail(id, hash) {
+    let package = await ESI.request(`/killmails/${id}/${hash}`);
+
+    return package;
   }
 
 };

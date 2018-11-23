@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "async": "2.0.1",
+    "cron": "^1.5.0",
     "dotenv-safe": "^5.0.1",
     "eve-swagger-simple": "https://github.com/dougestey/eve-swagger-simple",
     "kue": "^0.11.6",

@@ -33,9 +33,9 @@ let ZkillSocket = {
       if (!this.isAlive) {
         sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] No heartbeat detected in over 30 seconds.`);
 
-        sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Will attempt to reconnect in 5 seconds.`);
+        sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Will attempt to reconnect in 10 seconds.`);
 
-        return setTimeout(this.connect, 5000);
+        return setTimeout(this.connect, 10000);
       }
 
       this.isAlive = false;
@@ -65,10 +65,10 @@ let ZkillSocket = {
       let job = sails.config.jobs.create('process_zkill_package', { id: package.id });
 
       // Failure/backoff strategy
-      job.attempts(3).backoff({ type:'exponential' });
+      job.attempts(3).backoff({ type: 'exponential' });
 
       job.on('failed', function(err) {
-        sails.log.error(`[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Job failed`);
+        sails.log.error(`[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Job for ${package.id} failed`);
         sails.log.error(err);
       });
 
@@ -80,7 +80,7 @@ let ZkillSocket = {
 
       sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Attempting to re-establish...`);
 
-      setTimeout(this.connect, 2000);
+      setTimeout(this.connect, 10000);
     });
 
     this.socket.on('error', (error) => {

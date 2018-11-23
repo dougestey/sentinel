@@ -12,6 +12,8 @@ module.exports.routes = {
 
   'GET /api/sentinel/fleets/active': 'FleetController.active',
 
-  'GET /api/sentinel/socket': 'SocketController.connect'
+  'GET /api/sentinel/socket': 'SocketController.connect',
+
+  'GET /api/sentinel/backfill': 'BackfillController.all',
 
 };
