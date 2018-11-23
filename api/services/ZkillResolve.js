@@ -5,12 +5,23 @@
  * @help        :: https://github.com/zKillboard/RedisQ
  */
 
+const _sdeFailure = (e) => {
+  sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] SDE failure.`);
+  sails.log.error(e);
+  return;
+}
+
+const _esiFailure = (e) => {
+  sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
+  sails.log.error(e);
+  return;
+}
+
 let moment = require('moment');
 
 module.exports = {
 
   async kill(killmail) {
-
     let {
       killmail_id: killId,
       killmail_time: time,
@@ -34,51 +45,15 @@ module.exports = {
 
     if (!characterId || !shipTypeId || !systemId) {
       sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`);
-      sails.log.debug('[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Cancelling resolve.');
+      sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Cancelling resolve.`);
+
       return;
     }
 
-    let shipRes,
-        victimRes,
-        systemRes,
-        positionRes;
-
-    try {
-      shipRes = await Type.findOne(shipTypeId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
-      sails.log.error(e);
-      return;
-    }
-
-    try {
-      victimRes = await Swagger.character(characterId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
-      sails.log.error(e);
-      return;
-    }
-
-    try {
-      systemRes = await System.findOne(systemId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
-      sails.log.error(e);
-      return;
-    }
-
-    try {
-      positionRes = await Resolver.position(position, systemId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
-      sails.log.error(e);
-      return;
-    }
-
-    let { id: ship } = shipRes,
-        { id: victim } = victimRes,
-        { id: system } = systemRes,
-        positionName = positionRes;
+    let { id: ship } = await Type.findOne(shipTypeId).catch(_sdeFailure);
+    let { id: victim } = await Swagger.character(characterId).catch(_esiFailure);
+    let { id: system } = await System.findOne(systemId).catch(_sdeFailure);
+    let positionName = await Resolver.position(position, systemId);
 
     let composition = {};
 
@@ -123,7 +98,6 @@ module.exports = {
     Dispatcher.notifySockets(kill, 'kill');
 
     return kill;
-
   }
 
 };

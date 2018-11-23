@@ -1,7 +1,7 @@
 {
   "name": "sentinel",
   "private": false,
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "A WebSocket-compatible fleet tracker for EVE Online.",
   "keywords": [
     "eve online",
@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "async": "2.0.1",
+    "cron": "^1.5.0",
     "dotenv-safe": "^5.0.1",
     "eve-swagger-simple": "https://github.com/dougestey/eve-swagger-simple",
     "kue": "^0.11.6",

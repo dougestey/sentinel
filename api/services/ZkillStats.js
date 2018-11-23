@@ -33,6 +33,32 @@ module.exports = {
         return resolve(body);
       });
     });
+  },
+
+  history(date) {
+    return new Promise((resolve, reject) => {
+      request({
+        url: `https://zkillboard.com/api/history/${date}/`,
+        method: 'GET',
+        headers: {
+          'User-Agent': 'https://gloss.space'
+        },
+        json: true,
+        gzip: true
+      }, (error, response, body) => {
+        if (error || !body) {
+          if (!response) {
+            sails.log.error(`[ZkillStats.history] No response at all.`);
+            return reject();
+          }
+
+          sails.log.error(`[ZkillStats.history] ${response.statusCode} ${error}`);
+          return reject();
+        }
+
+        return resolve(body);
+      });
+    });
   }
 
 };

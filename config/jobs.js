@@ -38,7 +38,11 @@ process.once('SIGTERM', function() {
 });
 
 let _shouldTrack = (package) => {
-  return !package.zkb.npc || process.env.TRACK_NPC === 'true';
+  if (package.zkb)
+    return !package.zkb.npc || process.env.TRACK_NPC === 'true';
+
+  return package.attackers.length > 1 ||
+    (package.attackers[0].corporation_id && package.attackers[0].corporation_id > 1000150);
 };
 
 function init() {
@@ -129,7 +133,28 @@ function init() {
 
         ZkillResolve.kill(resolvedPackage)
           .then(() => {
-            sails.log.debug(`[${new Date().toLocaleTimeString()}] [Kue] Job for ${job.data.id} finished.`);
+            sails.log.debug(`[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Job for ${job.data.id} finished.`);
+
+            done();
+          })
+          .catch((err) => {
+            done(err)
+          });
+      })
+  });
+
+  jobs.process('backfill', ({ data: { id, hash }}, done) => {
+    Swagger.killmail(id, hash)
+      .then((package) => {
+        if (!_shouldTrack(package)) {
+          sails.log.debug(`[${new Date().toLocaleTimeString()}] [Zkill.backfill] Not tracking ${package.killmail_id}.`);
+
+          return done();
+        }
+
+        ZkillResolve.kill(package)
+          .then(() => {
+            sails.log.debug(`[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} finished.`);
 
             done();
           })
