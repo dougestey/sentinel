@@ -1,5 +1,4 @@
 const { CronJob } = require('cron');
-const fs = require('fs');
 const moment = require('moment');
 
 const everyMinute = 1000 * 60;
@@ -7,20 +6,19 @@ const everyThirtySeconds = everyMinute / 2;
 
 let ZkillJobs = {
 
-  backfillOffset: parseInt(process.env.BACKFILL_OFFSET),
+  backfillOffset: 0,
 
   kickoff() {
     this.updateDangerRatios();
 
     setInterval(this.updateDangerRatios, everyThirtySeconds);
 
-    // if (process.env.BACKFILL_ENABLED === 'true') {
-    //   let downtime = '0 11 * * *';
-    //   let devtime = '11 14 * * *';
+    if (process.env.BACKFILL_ENABLED === 'true') {
+      let schedule = process.env.BACKFILL_SCHEDULE;
+      let timezone = process.env.TIMEZONE;
 
-    //   new CronJob(devtime, this.backfill, null, true, 'Atlantic/Reykjavik');
-    // }
-    this.backfill();
+      new CronJob(schedule, this.backfill, null, true, timezone);
+    }
   },
 
   updateDangerRatios() {
@@ -58,9 +56,7 @@ let ZkillJobs = {
     sails.log.debug(`Backfilling for ${day}`);
     sails.log.debug(`${backfillIds.length} kills to backfill (out of ${killHashKeys.length})`);
     sails.log.debug(`Had ${((1 - backfillIds.length / killHashKeys.length) * 100).toFixed(2)}% before backfill.`);
-    sails.log.debug(`Note that NPC kills are included in backfill calc, because the kill packages have not been resolved yet.`)
-
-    // console.log(backfillIds);
+    sails.log.debug(`Note that NPC and structure kills are included in backfill calc, because the kill packages have not been resolved yet.`)
 
     for (let id of backfillIds) {
       let hash = killHash[id];
@@ -74,10 +70,7 @@ let ZkillJobs = {
       job.save();
     }
 
-    //   backfillJobs--;
-    // }
-
-    // sails.log.debug(`Spawned ${process.env.BACKFILL_JOBS} backfill processes of 200 kills.`);
+    this.backfillOffset++;
   }
 
 }
