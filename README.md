@@ -1,6 +1,6 @@
 # Sentinel
 
-A WebSocket-compatible kill & fleet tracker for EVE Online, built [on Sails.js](https://sailsjs.com/). Part of the magic behind the [Gloss](https://github.com/dougestey/gloss) project.
+A WebSocket-compatible kill & fleet tracker for EVE Online, built [on Sails.js](https://sailsjs.com/). Part of the magic behind the [GLOSS](https://github.com/dougestey/gloss) project.
 
 ## Features ##
 - Live reporting from zKillboard's [WebSocket service](https://github.com/zKillboard/zKillboard/wiki/Websocket)
