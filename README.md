@@ -3,12 +3,12 @@
 A WebSocket-compatible kill & fleet tracker for EVE Online, built [on Sails.js](https://sailsjs.com/). Part of the magic behind the [GLOSS](https://github.com/dougestey/gloss) project.
 
 ## Features ##
+- Backed by PostgreSQL
 - Live reporting from zKillboard's [WebSocket service](https://github.com/zKillboard/zKillboard/wiki/Websocket)
 - Identifies fleet patterns based on recorded kills
 - Resolves characters, corporations and alliances via [ESI](https://esi.tech.ccp.is/)
 - Resolves shiptypes and systems via the [EVE Online SDE](https://developers.eveonline.com/resource/resources)
-- [Database-agnostic](https://sailsjs.com/documentation/reference/configuration/sails-config-datastores#?supported-databases) (Sentinel doesn't care if you use PostgreSQL, Mongo, or even your [RAM](https://github.com/balderdashy/sails-disk))
-- Sophisticated job queue scheduler via [Kue](https://github.com/Automattic/kue)
+- Sophisticated job queue scheduling via [Kue](https://github.com/Automattic/kue)
 
 ## Environment ##
 
