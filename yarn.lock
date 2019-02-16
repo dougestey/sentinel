@@ -880,7 +880,7 @@ etag@~1.8.1:
 
 "eve-swagger-simple@https://github.com/dougestey/eve-swagger-simple":
   version "1.1.0"
-  resolved "https://github.com/dougestey/eve-swagger-simple#7323381891c191f33b20dde760228b7937d2ae6a"
+  resolved "https://github.com/dougestey/eve-swagger-simple#001862dcf4da72d41894a4380db1bc5fe150b6c8"
   dependencies:
     request "^2.81.0"
 

@@ -45,6 +45,9 @@ let Resolver = {
       }
     }
 
+    if (itemName === 'bad item')
+      return 'Abyssal Deadspace';
+
     return itemName ? itemName : 'Unknown';
   },
 

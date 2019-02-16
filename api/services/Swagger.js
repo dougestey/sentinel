@@ -34,7 +34,7 @@ module.exports = {
 
   status() {
     return new Promise((resolve, reject) => {
-      request.get('https://esi.tech.ccp.is/status.json',
+      request.get('https://esi.evetech.net/status.json',
       { json: true },
       (error, response, body) => {
         if (error) {
@@ -78,7 +78,7 @@ module.exports = {
       return;
 
     return new Promise((resolve, reject) => {
-      request.post('https://esi.tech.ccp.is/latest/universe/names/',
+      request.post('https://esi.evetech.net/latest/universe/names/',
         {
           json: true,
           body: ids

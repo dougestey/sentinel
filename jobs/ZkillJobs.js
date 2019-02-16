@@ -6,9 +6,9 @@ const everyThirtySeconds = everyMinute / 2;
 
 let ZkillJobs = {
 
-  backfillOffset: 0,
+  backfillOffset: parseInt(process.env.BACKFILL_OFFSET),
 
-  kickoff() {
+    kickoff() {
     this.updateDangerRatios();
 
     setInterval(this.updateDangerRatios, everyThirtySeconds);
@@ -18,6 +18,8 @@ let ZkillJobs = {
       let timezone = process.env.TIMEZONE;
 
       new CronJob(schedule, this.backfill, null, true, timezone);
+
+      this.backfill();
     }
   },
 
@@ -71,7 +73,7 @@ let ZkillJobs = {
     }
 
     this.backfillOffset++;
-  }
+  },
 
 }
 

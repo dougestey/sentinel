@@ -42,7 +42,7 @@ let _shouldTrack = (package) => {
     return !package.zkb.npc || process.env.TRACK_NPC === 'true';
 
   return package.attackers.length > 1 ||
-    (package.attackers[0].corporation_id && package.attackers[0].corporation_id > 1000150);
+    (package.attackers[0].corporation_id && package.attackers[0].corporation_id > 1000200);
 };
 
 function init() {
@@ -112,8 +112,8 @@ function init() {
           }
         }
 
-        done(null);
-      })
+        done();
+      }).catch((e) => sails.log.error(e));
   });
 
   // Zkill
