@@ -121,7 +121,12 @@ module.exports = {
         corporation: corporation ? corporation.id : null,
         alliance: alliance ? alliance.id : null
       })
-      .intercept('E_UNIQUE', (e) => { sails.log.error(`[Swagger.character] Race condition: Tried to create a character that already exists. ${e}`) })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(`[Swagger.character] Race condition: Tried to create a character that already exists.`);
+        sails.log.error(`[Swagger.character] characterId: ${characterId}`);
+
+        return e;
+      })
       .fetch();
     } else {
       let lastEsiUpdate = moment(localCharacter.lastEsiUpdate),

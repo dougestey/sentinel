@@ -155,6 +155,7 @@ function init() {
         ZkillResolve.kill(package)
           .then(() => {
             sails.log.debug(`[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} finished.`);
+            sails.config.sentinel.backfill.completed++;
 
             done();
           })

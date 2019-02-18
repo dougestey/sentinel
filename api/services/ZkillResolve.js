@@ -8,12 +8,14 @@
 const _sdeFailure = (e) => {
   sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] SDE failure.`);
   sails.log.error(e);
+  sails.config.sentinel.failures.sentinel++;
   return;
 }
 
 const _esiFailure = (e) => {
   sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`);
   sails.log.error(e);
+  sails.config.sentinel.failures.esi++;
   return;
 }
 
@@ -74,7 +76,11 @@ module.exports = {
       victim,
       system
     })
-    .intercept('E_UNIQUE', (e) => { return sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`) })
+    .intercept('E_UNIQUE', (e) => {
+      sails.config.sentinel.failures.sentinel++;
+
+      return sails.log.error(`[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`)
+    })
     .fetch();
 
     let now = moment(),

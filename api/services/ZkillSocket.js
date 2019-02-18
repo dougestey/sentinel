@@ -35,6 +35,9 @@ let ZkillSocket = {
 
         sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Will attempt to reconnect in 10 seconds.`);
 
+        sails.config.sentinel.connected = false;
+        sails.config.sentinel.failures.zkill++;
+
         return setTimeout(this.connect, 10000);
       }
 
@@ -46,12 +49,15 @@ let ZkillSocket = {
     this.socket.on('pong', () => {
       this.isAlive = true;
 
+      sails.config.sentinel.connected = true;
+
       sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Heartbeat response received from Zkill.`);
     });
 
     // Subscribe to the full killstream.
     this.socket.on('open', () => {
       sails.log.debug(`[${new Date().toLocaleTimeString()}] [ZkillSocket] Connected.`);
+      sails.config.sentinel.connected = true;
 
       this.socket.send(JSON.stringify({
         action: 'sub',

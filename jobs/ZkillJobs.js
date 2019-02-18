@@ -6,9 +6,7 @@ const everyThirtySeconds = everyMinute / 2;
 
 let ZkillJobs = {
 
-  backfillOffset: parseInt(process.env.BACKFILL_OFFSET),
-
-    kickoff() {
+  kickoff() {
     this.updateDangerRatios();
 
     setInterval(this.updateDangerRatios, everyThirtySeconds);
@@ -35,7 +33,12 @@ let ZkillJobs = {
   },
 
   async backfill() {
-    let day = moment().subtract(this.backfillOffset, 'days').format('YYYYMMDD');
+    let backfillOffset = sails.config.sentinel.backfill.current;
+
+    console.log('Current backfill offset', backfillOffset);
+    console.log(typeof(backfillOffset));
+
+    let day = moment().subtract(backfillOffset, 'days').format('YYYYMMDD');
     let killHash = await ZkillStats.history(day);
     let killHashKeys = _.keys(killHash);
     let firstKill = parseInt(_.first(killHashKeys));
@@ -72,7 +75,7 @@ let ZkillJobs = {
       job.save();
     }
 
-    this.backfillOffset++;
+    sails.config.sentinel.backfill.current++;
   },
 
 }
