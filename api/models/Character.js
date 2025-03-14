@@ -6,31 +6,27 @@
  */
 
 module.exports = {
-
   attributes: {
+    id: { type: "number", autoIncrement: false, required: true },
 
-    id: { type: 'number', autoIncrement: false, required: true },
+    name: "string",
 
-    name: 'string',
-
-    dangerRatio: 'number',
+    dangerRatio: "number",
 
     // Relationships
 
-    corporation: { model: 'corporation' },
+    corporation: { model: "corporation" },
 
-    alliance: { model: 'alliance' },
+    alliance: { model: "alliance" },
 
-    fleet: { model: 'fleet' },
+    fleet: { model: "fleet" },
 
-    history: { collection: 'fleet', via: 'history' },
+    history: { collection: "fleet", via: "history" },
 
     // Meta
 
-    lastEsiUpdate: 'string',
+    lastEsiUpdate: "string",
 
-    lastZkillUpdate: 'string'
-
-  }
-
+    lastZkillUpdate: "string",
+  },
 };

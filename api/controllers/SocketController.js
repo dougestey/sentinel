@@ -6,7 +6,6 @@
  */
 
 module.exports = {
-
   connect(req, res) {
     if (req.isSocket) {
       Dispatcher.joinPool(req);
@@ -15,6 +14,5 @@ module.exports = {
     }
 
     return res.status(403).send();
-  }
-
-}
+  },
+};

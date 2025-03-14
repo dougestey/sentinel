@@ -5,32 +5,33 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
-let datastore = 'sdeDev';
+let datastore = "sdeDev";
 
-if (process.env.NODE_ENV === 'production') {
-  datastore = 'sde';
+if (process.env.NODE_ENV === "production") {
+  datastore = "sde";
 }
 
 module.exports = {
-
   datastore,
 
-  tableName: 'mapRegions',
+  tableName: "mapRegions",
 
   attributes: {
-
     createdAt: false,
 
     updatedAt: false,
 
-    id: { columnName: 'regionID', type: 'number', autoIncrement: false, required: true },
+    id: {
+      columnName: "regionID",
+      type: "number",
+      autoIncrement: false,
+      required: true,
+    },
 
-    name: { columnName: 'regionName', type: 'string' },
+    name: { columnName: "regionName", type: "string" },
 
-    x: { columnType: 'decimal', type: 'number' },
+    x: { columnType: "decimal", type: "number" },
 
-    y: { columnType: 'decimal', type: 'number' },
-
-  }
-
+    y: { columnType: "decimal", type: "number" },
+  },
 };

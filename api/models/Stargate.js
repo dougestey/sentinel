@@ -10,13 +10,9 @@
 
 // TODO: Determine where this lies in the SDE
 module.exports = {
-
   attributes: {
+    stargateId: { type: "number", unique: true },
 
-    stargateId: { type: 'number', unique: true },
-
-    name: 'string'
-
-  }
-
+    name: "string",
+  },
 };

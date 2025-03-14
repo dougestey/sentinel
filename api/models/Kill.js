@@ -6,33 +6,29 @@
  */
 
 module.exports = {
-
   attributes: {
+    killId: { type: "number", unique: true },
 
-    killId: { type: 'number', unique: true },
+    time: "string",
 
-    time: 'string',
+    position: "json",
 
-    position: 'json',
+    positionName: "string",
 
-    positionName: 'string',
+    items: "json",
 
-    items: 'json',
+    composition: "json",
 
-    composition: 'json',
-
-    meta: 'json',
+    meta: "json",
 
     // Relationships
 
-    ship: { model: 'type' },
+    ship: { model: "type" },
 
-    victim: { model: 'character' },
+    victim: { model: "character" },
 
-    system: { model: 'system' },
+    system: { model: "system" },
 
-    fleet: { model: 'fleet' }
-
-  }
-
+    fleet: { model: "fleet" },
+  },
 };
