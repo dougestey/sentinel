@@ -9,7 +9,7 @@ const WebSocket = require('ws');
 
 let ZkillSocket = {
   connect() {
-    this.socket = new WebSocket('wss://zkillboard.com:2096');
+    this.socket = new WebSocket('wss://zkillboard.com/websocket/');
 
     sails.log.debug(
       `[${new Date().toLocaleTimeString()}] [ZkillSocket] Initializing new socket instance.`
