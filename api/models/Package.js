@@ -7,6 +7,6 @@
 
 module.exports = {
   attributes: {
-    body: "json",
+    body: 'json',
   },
 };

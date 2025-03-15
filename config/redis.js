@@ -1,12 +1,8 @@
-let redis = require("redis"),
-  redisUrl = "redis://localhost:6667/";
+const redis = require('redis');
+const redisUrl = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
-if (process.env.NODE_ENV === "production") {
-  redisUrl = "redis://localhost:6666/";
-}
+const db = redis.createClient(redisUrl);
 
-let db = redis.createClient(redisUrl);
-
-db.flushdb();
+// db.flushdb();
 
 module.exports.redis = db;

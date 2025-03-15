@@ -9,13 +9,13 @@ module.exports = {
     })();
 
     let character = await Character.findOne(query)
-      .populate("corporation")
-      .populate("alliance")
-      .populate("fleet")
-      .populate("history");
+      .populate('corporation')
+      .populate('alliance')
+      .populate('fleet')
+      .populate('history');
 
     let knownCyno = false;
-    let losses = await Kill.find({ victim: character.id }).sort("time DESC");
+    let losses = await Kill.find({ victim: character.id }).sort('time DESC');
 
     for (let loss of losses) {
       for (let item of loss.items) {

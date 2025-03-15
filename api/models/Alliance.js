@@ -7,16 +7,11 @@
 
 module.exports = {
   attributes: {
-    id: { type: "number", autoIncrement: false, required: true },
-
-    name: "string",
-
-    ticker: "string",
-
-    activeCombatPilots: "number",
-
-    hasSupers: "boolean",
-
-    dangerRatio: "number",
+    id: { type: 'number', autoIncrement: false, required: true },
+    name: 'string',
+    ticker: 'string',
+    activeCombatPilots: 'number',
+    hasSupers: 'boolean',
+    dangerRatio: 'number',
   },
 };

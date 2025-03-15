@@ -9,10 +9,10 @@ let Resolver = {
   async position(position, systemId) {
     if (!position || !systemId) {
       sails.log.error(
-        `[${new Date().toLocaleTimeString()}] [Resolver] ESI failure: Incomplete position data`,
+        `[${new Date().toLocaleTimeString()}] [Resolver] ESI failure: Incomplete position data`
       );
 
-      return "Unknown";
+      return 'Unknown';
     }
 
     let response;
@@ -21,9 +21,9 @@ let Resolver = {
       response = await Fuzzworks.nearestCelestial(position, systemId);
     } catch (e) {
       sails.log.error(
-        `[${new Date().toLocaleTimeString()}] [Resolver] Fuzzworks failure: ${e}`,
+        `[${new Date().toLocaleTimeString()}] [Resolver] Fuzzworks failure: ${e}`
       );
-      return "Unknown";
+      return 'Unknown';
     }
 
     let { itemName, typeid: typeId, itemid: itemId } = response;
@@ -34,7 +34,7 @@ let Resolver = {
       let type = await Type.findOne(typeId);
 
       if (type && type.name) {
-        if (type.name.indexOf("Stargate") !== -1) {
+        if (type.name.indexOf('Stargate') !== -1) {
           let { name } = await Swagger.stargate(itemId);
           let { name: systemName } = await System.findOne(systemId);
 
@@ -45,9 +45,9 @@ let Resolver = {
       }
     }
 
-    if (itemName === "bad item") return "Abyssal Deadspace";
+    if (itemName === 'bad item') return 'Abyssal Deadspace';
 
-    return itemName ? itemName : "Unknown";
+    return itemName ? itemName : 'Unknown';
   },
 
   async composition(ids, characters) {
@@ -64,8 +64,8 @@ let Resolver = {
     let ships = await Swagger.names(_.uniq(shipTypeIds));
 
     _.forEach(ids, (shipTypeId, characterId) => {
-      let charIndex = _.findIndex(characters, "id", parseInt(characterId)),
-        shipIndex = _.findIndex(ships, "id", shipTypeId);
+      let charIndex = _.findIndex(characters, 'id', parseInt(characterId)),
+        shipIndex = _.findIndex(ships, 'id', shipTypeId);
 
       if (charIndex !== -1) characters[charIndex].ship = ships[shipIndex];
     });

@@ -7,7 +7,7 @@
 
 const _sdeFailure = (e) => {
   sails.log.error(
-    `[${new Date().toLocaleTimeString()}] [ZkillResolve] SDE failure.`,
+    `[${new Date().toLocaleTimeString()}] [ZkillResolve] SDE failure.`
   );
   sails.log.error(e);
   sails.config.sentinel.failures.sentinel++;
@@ -16,14 +16,14 @@ const _sdeFailure = (e) => {
 
 const _esiFailure = (e) => {
   sails.log.error(
-    `[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`,
+    `[${new Date().toLocaleTimeString()}] [ZkillResolve] ESI failure.`
   );
   sails.log.error(e);
   sails.config.sentinel.failures.esi++;
   return;
 };
 
-let moment = require("moment");
+let moment = require('moment');
 
 module.exports = {
   async kill(killmail) {
@@ -46,16 +46,16 @@ module.exports = {
 
     if (existingRecord) {
       return sails.log.debug(
-        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Ignoring ${killId} - already in database.`,
+        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Ignoring ${killId} - already in database.`
       );
     }
 
     if (!characterId || !shipTypeId || !systemId) {
       sails.log.debug(
-        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`,
+        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Issue with record: characterId ${characterId} || shipTypeId ${shipTypeId} || systemId ${systemId}`
       );
       sails.log.debug(
-        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Cancelling resolve.`,
+        `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Cancelling resolve.`
       );
 
       return;
@@ -85,11 +85,11 @@ module.exports = {
       victim,
       system,
     })
-      .intercept("E_UNIQUE", (e) => {
+      .intercept('E_UNIQUE', (e) => {
         sails.config.sentinel.failures.sentinel++;
 
         return sails.log.error(
-          `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`,
+          `[${new Date().toLocaleTimeString()}] [ZkillResolve.kill] Race condition: Tried to create a kill that already exists. ${e}`
         );
       })
       .fetch();
@@ -98,23 +98,23 @@ module.exports = {
       then = moment(time),
       fleet;
 
-    let elapsedTime = now.diff(then, "minutes");
+    let elapsedTime = now.diff(then, 'minutes');
 
     if (
-      process.env.TRACK_FLEETS === "true" &&
+      process.env.TRACK_FLEETS === 'true' &&
       elapsedTime < parseInt(process.env.FLEET_EXPIRY_IN_MINUTES)
     )
       fleet = await Identifier.fleet(killmail, system, kill);
 
     kill = await Kill.findOne(kill.id)
-      .populate("ship")
-      .populate("victim")
-      .populate("system")
-      .populate("fleet");
+      .populate('ship')
+      .populate('victim')
+      .populate('system')
+      .populate('fleet');
 
-    if (fleet) Dispatcher.notifySockets(fleet, "fleet");
+    if (fleet) Dispatcher.notifySockets(fleet, 'fleet');
 
-    Dispatcher.notifySockets(kill, "kill");
+    Dispatcher.notifySockets(kill, 'kill');
 
     return kill;
   },

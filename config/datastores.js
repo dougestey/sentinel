@@ -15,38 +15,20 @@
 
 module.exports.datastores = {
   sentinel: {
-    adapter: "sails-postgresql",
-    host: "localhost",
-    port: 5432,
-    database: "sentinel",
-    user: "sentinel",
-    password: "sentinel",
-  },
-
-  sentinelDev: {
-    adapter: "sails-postgresql",
-    host: "localhost",
-    port: 5432,
-    database: "sentinel_dev",
-    user: "sentinel",
-    password: "sentinel",
+    adapter: 'sails-postgresql',
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    database: process.env.DATABASE_NAME,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
   },
 
   sde: {
-    adapter: "sails-postgresql",
-    host: "localhost",
-    port: 5432,
-    database: "eve",
-    user: "eve",
-    password: "eve",
-  },
-
-  sdeDev: {
-    adapter: "sails-postgresql",
-    host: "localhost",
-    port: 5432,
-    database: "eve_dev",
-    user: "eve",
-    password: "eve",
+    adapter: 'sails-postgresql',
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    database: process.env.DATABASE_NAME + '_sde',
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
   },
 };

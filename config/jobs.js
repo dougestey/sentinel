@@ -6,21 +6,22 @@
  *
  */
 
-let kue = require("kue"),
-  moment = require("moment");
-(port = 6667), (webUiPort = 6574);
+const kue = require('kue');
+const moment = require('moment');
 
-if (process.env.NODE_ENV === "production") {
-  port = 6666;
-  webUiPort = 6564;
-}
+// Redis configuration
+const host = process.env.REDIS_HOST;
+const port = process.env.REDIS_PORT || 6379;
+
+// Kue configuration
+const webUiPort = process.env.WEB_UI_PORT || 6574;
 
 let jobs = kue.createQueue({
-  prefix: "sentinel",
+  prefix: 'sentinel',
   redis: {
-    host: "127.0.0.1",
+    host,
     port,
-    auth: "",
+    auth: '',
   },
   disableSearch: true,
 });
@@ -29,15 +30,15 @@ let jobs = kue.createQueue({
 kue.app.listen(webUiPort);
 
 // give kue workers time to finish active job
-process.once("SIGTERM", function () {
+process.once('SIGTERM', function () {
   jobs.shutdown(function (error) {
-    sails.log.debug("Kue saw SIGTERM: ", error || "ok");
+    sails.log.debug('Kue saw SIGTERM: ', error || 'ok');
     process.exit(0);
   }, 5000);
 });
 
 let _shouldTrack = (package) => {
-  if (package.zkb) return !package.zkb.npc || process.env.TRACK_NPC === "true";
+  if (package.zkb) return !package.zkb.npc || process.env.TRACK_NPC === 'true';
 
   return (
     package.attackers.length > 1 ||
@@ -48,14 +49,13 @@ let _shouldTrack = (package) => {
 
 function init() {
   // Fleet
-
-  jobs.process("determine_fleet_health", (job, done) => {
+  jobs.process('determine_fleet_health', (job, done) => {
     let now = moment(),
-      fiveMinutesAgo = now.subtract(5, "minutes").toISOString();
+      fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
 
     Fleet.find({
       isActive: true,
-      lastFleetHealthCheck: { "<=": fiveMinutesAgo },
+      lastFleetHealthCheck: { '<=': fiveMinutesAgo },
     })
       .limit(50)
       .then(async (fleets) => {
@@ -76,12 +76,12 @@ function init() {
 
             if (!fleet.system)
               sails.log.error(
-                `[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`,
+                `[Job.determineFleetHealth] No fleet.system for fleet with id ${fleet.id}.`
               );
 
             fleet = await FleetSerializer.one(fleet.id);
 
-            Dispatcher.notifySockets(fleet, "fleet_expire");
+            Dispatcher.notifySockets(fleet, 'fleet_expire');
           } else {
             await Fleet.update(fleet.id, {
               lastFleetHealthCheck: now.toISOString(),
@@ -93,22 +93,22 @@ function init() {
       });
   });
 
-  jobs.process("determine_fleet_threat_level", (job, done) => {
+  jobs.process('determine_fleet_threat_level', (job, done) => {
     let now = moment(),
-      fiveMinutesAgo = now.subtract(5, "minutes").toISOString();
+      fiveMinutesAgo = now.subtract(5, 'minutes').toISOString();
 
     Fleet.find({
       isActive: true,
-      lastFleetThreatLevelCheck: { "<=": fiveMinutesAgo },
+      lastFleetThreatLevelCheck: { '<=': fiveMinutesAgo },
     })
       .limit(25)
-      .populate("characters")
+      .populate('characters')
       .then(async (fleets) => {
         for (let fleet of fleets) {
           if (fleet.characters.length) {
-            let dangerRatio = await Character.avg("dangerRatio", {
+            let dangerRatio = await Character.avg('dangerRatio', {
               fleet: fleet.id,
-              dangerRatio: { ">": 0 },
+              dangerRatio: { '>': 0 },
             });
             let lastFleetThreatLevelCheck = moment().toISOString();
 
@@ -119,7 +119,7 @@ function init() {
 
             fleet = await FleetSerializer.one(fleet.id);
 
-            Dispatcher.notifySockets(fleet, "fleet");
+            Dispatcher.notifySockets(fleet, 'fleet');
           }
         }
 
@@ -129,10 +129,9 @@ function init() {
   });
 
   // Zkill
-
-  jobs.process("process_zkill_package", (job, done) => {
+  jobs.process('process_zkill_package', (job, done) => {
     sails.log.debug(
-      `[${new Date().toLocaleTimeString()}] [Kue] Processing job for ${job.data.id}`,
+      `[${new Date().toLocaleTimeString()}] [Kue] Processing job for ${job.data.id}`
     );
 
     Package.findOne(job.data.id).then((package) => {
@@ -140,7 +139,7 @@ function init() {
 
       if (!_shouldTrack(resolvedPackage)) {
         sails.log.debug(
-          `[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Not tracking ${resolvedPackage.killmail_id}.`,
+          `[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Not tracking ${resolvedPackage.killmail_id}.`
         );
 
         return done();
@@ -149,7 +148,7 @@ function init() {
       ZkillResolve.kill(resolvedPackage)
         .then(() => {
           sails.log.debug(
-            `[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Job for ${job.data.id} finished.`,
+            `[${new Date().toLocaleTimeString()}] [Zkill.processZkillPackage] Job for ${job.data.id} finished.`
           );
 
           done();
@@ -160,11 +159,11 @@ function init() {
     });
   });
 
-  jobs.process("backfill", ({ data: { id, hash } }, done) => {
+  jobs.process('backfill', ({ data: { id, hash } }, done) => {
     Swagger.killmail(id, hash).then((package) => {
       if (!_shouldTrack(package)) {
         sails.log.debug(
-          `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Not tracking ${package.killmail_id}.`,
+          `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Not tracking ${package.killmail_id}.`
         );
 
         return done();
@@ -173,7 +172,7 @@ function init() {
       ZkillResolve.kill(package)
         .then(() => {
           sails.log.debug(
-            `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} finished.`,
+            `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} finished.`
           );
           sails.config.sentinel.backfill.completed++;
 
@@ -185,19 +184,19 @@ function init() {
     });
   });
 
-  jobs.process("update_danger_ratios", (job, done) => {
+  jobs.process('update_danger_ratios', (job, done) => {
     let now = moment(),
       maxCacheTime = parseInt(process.env.CACHE_CHARACTERS_IN_DAYS),
-      threshold = now.subtract(maxCacheTime, "days").toISOString();
+      threshold = now.subtract(maxCacheTime, 'days').toISOString();
 
     Character.find({
-      or: [{ lastZkillUpdate: "" }, { lastZkillUpdate: { "<=": threshold } }],
+      or: [{ lastZkillUpdate: '' }, { lastZkillUpdate: { '<=': threshold } }],
     })
       .limit(10)
       .then((characters) => {
         if (characters && characters instanceof Error) {
           sails.log.error(
-            `[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${characters}`,
+            `[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${characters}`
           );
           done(characters);
         }
@@ -215,7 +214,7 @@ function init() {
             })
             .catch((error) => {
               sails.log.error(
-                `[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${error}`,
+                `[${new Date().toLocaleTimeString()}] [Job.update_danger_ratios] ${error}`
               );
             });
         }
@@ -228,18 +227,18 @@ function init() {
   //        worker process
 
   // Interval Jobs
-  if (process.env.TRACK_ENABLED === "true") {
-    require("../jobs/ZkillJobs").kickoff();
-    require("../jobs/FleetJobs").kickoff();
-    require("../jobs/SwaggerJobs").kickoff();
+  if (process.env.TRACK_ENABLED === 'true') {
+    require('../jobs/ZkillJobs').kickoff();
+    require('../jobs/FleetJobs').kickoff();
+    require('../jobs/SwaggerJobs').kickoff();
   }
 
   // remove jobs once completed
-  jobs.on("job complete", function (id) {
+  jobs.on('job complete', function (id) {
     kue.Job.get(id, function (err, job) {
       if (err) {
         console.log(
-          `[${new Date().toLocaleTimeString()}] [Kue] Job ${id} failed: ${err}`,
+          `[${new Date().toLocaleTimeString()}] [Kue] Job ${id} failed: ${err}`
         );
       }
 

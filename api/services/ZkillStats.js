@@ -5,7 +5,7 @@
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
-const request = require("request");
+const request = require('request');
 
 module.exports = {
   character(characterId) {
@@ -13,9 +13,9 @@ module.exports = {
       request(
         {
           url: `https://zkillboard.com/api/stats/characterID/${characterId}/`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "User-Agent": "https://gloss.space",
+            'User-Agent': 'https://gloss.space',
           },
           json: true,
           gzip: true,
@@ -28,13 +28,13 @@ module.exports = {
             }
 
             sails.log.error(
-              `[ZkillStats.character] ${response.statusCode} ${error}`,
+              `[ZkillStats.character] ${response.statusCode} ${error}`
             );
             return reject();
           }
 
           return resolve(body);
-        },
+        }
       );
     });
   },
@@ -44,9 +44,9 @@ module.exports = {
       request(
         {
           url: `https://zkillboard.com/api/history/${date}/`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "User-Agent": "https://gloss.space",
+            'User-Agent': 'https://gloss.space',
           },
           json: true,
           gzip: true,
@@ -59,13 +59,13 @@ module.exports = {
             }
 
             sails.log.error(
-              `[ZkillStats.history] ${response.statusCode} ${error}`,
+              `[ZkillStats.history] ${response.statusCode} ${error}`
             );
             return reject();
           }
 
           return resolve(body);
-        },
+        }
       );
     });
   },

@@ -9,7 +9,7 @@
  * https://sailsjs.com/config/bootstrap
  */
 
-require("dotenv").config();
+require('dotenv').config();
 
 module.exports.bootstrap = async function (done) {
   let offset = parseInt(process.env.BACKFILL_OFFSET);
@@ -34,7 +34,7 @@ module.exports.bootstrap = async function (done) {
   // Job queue kickoff (config/jobs.js)
   sails.config.jobs.init();
 
-  if (process.env.TRACK_ENABLED === "true") ZkillSocket.connect();
+  if (process.env.TRACK_ENABLED === 'true') ZkillSocket.connect();
 
   // Needed for Sails to complete lift.
   return done();

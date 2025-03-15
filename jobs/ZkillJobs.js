@@ -1,5 +1,5 @@
-const { CronJob } = require("cron");
-const moment = require("moment");
+const { CronJob } = require('cron');
+const moment = require('moment');
 
 const everyMinute = 1000 * 60;
 const everyThirtySeconds = everyMinute / 2;
@@ -10,7 +10,7 @@ let ZkillJobs = {
 
     setInterval(this.updateDangerRatios, everyThirtySeconds);
 
-    if (process.env.BACKFILL_ENABLED === "true") {
+    if (process.env.BACKFILL_ENABLED === 'true') {
       let schedule = process.env.BACKFILL_SCHEDULE;
       let timezone = process.env.TIMEZONE;
 
@@ -22,12 +22,12 @@ let ZkillJobs = {
 
   updateDangerRatios() {
     let job = sails.config.jobs
-      .create("update_danger_ratios")
-      .priority("low")
+      .create('update_danger_ratios')
+      .priority('low')
       .ttl(everyMinute);
 
-    job.on("failed", function (err) {
-      sails.log.error("[Zkill.updateDangerRatios] Job failed");
+    job.on('failed', function (err) {
+      sails.log.error('[Zkill.updateDangerRatios] Job failed');
       sails.log.error(err);
     });
 
@@ -37,10 +37,10 @@ let ZkillJobs = {
   async backfill() {
     let backfillOffset = sails.config.sentinel.backfill.current;
 
-    console.log("Current backfill offset", backfillOffset);
+    console.log('Current backfill offset', backfillOffset);
     console.log(typeof backfillOffset);
 
-    let day = moment().subtract(backfillOffset, "days").format("YYYYMMDD");
+    let day = moment().subtract(backfillOffset, 'days').format('YYYYMMDD');
     let killHash = await ZkillStats.history(day);
     let killHashKeys = _.keys(killHash);
     let firstKill = parseInt(_.first(killHashKeys));
@@ -49,7 +49,7 @@ let ZkillJobs = {
     let { rows: missingIds } = await Kill.getDatastore().sendNativeQuery(
       `SELECT s.i AS "killId"
         FROM generate_series(${firstKill}, ${lastKill}) s(i)
-        WHERE NOT EXISTS (SELECT 1 FROM kill WHERE "killId" = s.i);`,
+        WHERE NOT EXISTS (SELECT 1 FROM kill WHERE "killId" = s.i);`
     );
 
     let backfillIds = [];
@@ -60,24 +60,24 @@ let ZkillJobs = {
 
     sails.log.debug(`Backfilling for ${day}`);
     sails.log.debug(
-      `${backfillIds.length} kills to backfill (out of ${killHashKeys.length})`,
+      `${backfillIds.length} kills to backfill (out of ${killHashKeys.length})`
     );
     sails.log.debug(
-      `Had ${((1 - backfillIds.length / killHashKeys.length) * 100).toFixed(2)}% before backfill.`,
+      `Had ${((1 - backfillIds.length / killHashKeys.length) * 100).toFixed(2)}% before backfill.`
     );
     sails.log.debug(
-      `Note that NPC and structure kills are included in backfill calc, because the kill packages have not been resolved yet.`,
+      `Note that NPC and structure kills are included in backfill calc, because the kill packages have not been resolved yet.`
     );
 
     for (let id of backfillIds) {
       let hash = killHash[id];
       let job = sails.config.jobs
-        .create("backfill", { id, hash })
-        .priority("low");
+        .create('backfill', { id, hash })
+        .priority('low');
 
-      job.on("failed", function (err) {
+      job.on('failed', function (err) {
         sails.log.error(
-          `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} failed`,
+          `[${new Date().toLocaleTimeString()}] [Zkill.backfill] Job for ${id} failed`
         );
         sails.log.error(err);
       });

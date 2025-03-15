@@ -16,24 +16,24 @@ let Dispatcher = {
     }
 
     if (!_.has(pool, socketId)) {
-      sails.sockets.join(req, "activeSockets");
+      sails.sockets.join(req, 'activeSockets');
 
       sails.log.debug(`[Dispatcher.joinPool] ${socketId} joins the pool.`);
 
       pool[socketId] = [];
     } else {
       sails.log.debug(
-        `[Dispatcher.joinPool] ${socketId} is already in the pool.`,
+        `[Dispatcher.joinPool] ${socketId} is already in the pool.`
       );
     }
   },
 
   // Notify connected sockets of new data
   notifySockets(data, type) {
-    sails.io.sockets.in("activeSockets").clients((err, members) => {
+    sails.io.sockets.in('activeSockets').clients((err, members) => {
       members.map((socketId) => {
         sails.log.debug(
-          `[Dispatcher.notifySockets] Notifying ${socketId} of ${type}...`,
+          `[Dispatcher.notifySockets] Notifying ${socketId} of ${type}...`
         );
         sails.log.silly(`[Dispatcher.notifySockets] ${data}`);
 

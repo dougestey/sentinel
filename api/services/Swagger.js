@@ -5,21 +5,21 @@
  * @help        :: https://esi.tech.ccp.is/ui/
  */
 
-let ESI = require("eve-swagger-simple"),
-  request = require("request"),
-  qs = require("qs"),
-  moment = require("moment");
+let ESI = require('eve-swagger-simple'),
+  request = require('request'),
+  qs = require('qs'),
+  moment = require('moment');
 
 let _endpointIsNeeded = (endpoint) => {
   let requiredEndpoints = [
-    "/universe/names/",
-    "/universe/systems/",
-    "/characters/{character_id}/",
-    "/universe/types/{type_id}/",
-    "/universe/systems/{system_id}/",
-    "/universe/stargates/{stargate_id}/",
-    "/corporations/{corporation_id}/",
-    "/alliances/{alliance_id}/",
+    '/universe/names/',
+    '/universe/systems/',
+    '/characters/{character_id}/',
+    '/universe/types/{type_id}/',
+    '/universe/systems/{system_id}/',
+    '/universe/stargates/{stargate_id}/',
+    '/corporations/{corporation_id}/',
+    '/alliances/{alliance_id}/',
   ];
 
   let isNeeded = false;
@@ -33,7 +33,7 @@ module.exports = {
   status() {
     return new Promise((resolve, reject) => {
       request.get(
-        "https://esi.evetech.net/status.json",
+        'https://esi.evetech.net/status.json',
         { json: true },
         (error, response, body) => {
           if (error) {
@@ -48,23 +48,23 @@ module.exports = {
             status = body;
 
           status.map((endpoint) => {
-            if (_endpointIsNeeded(endpoint) && endpoint.status !== "green") {
+            if (_endpointIsNeeded(endpoint) && endpoint.status !== 'green') {
               allSystemsGo = false;
 
               sails.log.error(
-                `[Swagger.status] ${endpoint.route} is ${endpoint.status}.`,
+                `[Swagger.status] ${endpoint.route} is ${endpoint.status}.`
               );
             }
           });
 
           return resolve(allSystemsGo);
-        },
+        }
       );
     });
   },
 
   async initialize() {
-    let systems = await ESI.request("/universe/systems"),
+    let systems = await ESI.request('/universe/systems'),
       fn = async function (systemId) {
         await System.findOrCreate({ systemId }, { systemId });
       };
@@ -80,7 +80,7 @@ module.exports = {
 
     return new Promise((resolve, reject) => {
       request.post(
-        "https://esi.evetech.net/latest/universe/names/",
+        'https://esi.evetech.net/latest/universe/names/',
         {
           json: true,
           body: ids,
@@ -94,7 +94,7 @@ module.exports = {
           if (!body) return reject();
 
           resolve(body);
-        },
+        }
       );
     });
   },
@@ -122,9 +122,9 @@ module.exports = {
         corporation: corporation ? corporation.id : null,
         alliance: alliance ? alliance.id : null,
       })
-        .intercept("E_UNIQUE", (e) => {
+        .intercept('E_UNIQUE', (e) => {
           sails.log.error(
-            `[Swagger.character] Race condition: Tried to create a character that already exists.`,
+            `[Swagger.character] Race condition: Tried to create a character that already exists.`
           );
           sails.log.error(`[Swagger.character] characterId: ${characterId}`);
 
@@ -198,9 +198,9 @@ module.exports = {
         memberCount,
         alliance: allianceRecord ? allianceRecord.id : null,
       })
-        .intercept("E_UNIQUE", (e) => {
+        .intercept('E_UNIQUE', (e) => {
           sails.log.error(
-            `[Swagger.corporation] Race condition: Tried to create a corporation that already exists. ${e}`,
+            `[Swagger.corporation] Race condition: Tried to create a corporation that already exists. ${e}`
           );
         })
         .fetch();
@@ -218,9 +218,9 @@ module.exports = {
       let { name, ticker } = await ESI.request(`/alliances/${allianceId}`);
 
       localAlliance = await Alliance.create({ id: allianceId, name, ticker })
-        .intercept("E_UNIQUE", (e) => {
+        .intercept('E_UNIQUE', (e) => {
           sails.log.error(
-            `[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`,
+            `[Swagger.alliance] Race condition: Tried to create an alliance that already exists. ${e}`
           );
         })
         .fetch();

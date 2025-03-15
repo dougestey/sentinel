@@ -50,7 +50,7 @@ module.exports.models = {
    *                                                                          *
    ***************************************************************************/
 
-  migrate: "safe",
+  migrate: 'safe',
 
   /***************************************************************************
    *                                                                          *
@@ -65,9 +65,9 @@ module.exports.models = {
    ***************************************************************************/
 
   attributes: {
-    createdAt: { type: "string", autoCreatedAt: true },
-    updatedAt: { type: "string", autoUpdatedAt: true },
-    id: { columnName: "id", type: "number", autoIncrement: true },
+    createdAt: { type: 'string', autoCreatedAt: true },
+    updatedAt: { type: 'string', autoUpdatedAt: true },
+    id: { columnName: 'id', type: 'number', autoIncrement: true },
   },
 
   /******************************************************************************
@@ -85,7 +85,7 @@ module.exports.models = {
    ******************************************************************************/
 
   dataEncryptionKeys: {
-    default: "W/PubfPP/wmgjWNLF3h/nfwhQ/r90xdM0mZVsXVIPeg=",
+    default: 'W/PubfPP/wmgjWNLF3h/nfwhQ/r90xdM0mZVsXVIPeg=',
   },
 
   /***************************************************************************

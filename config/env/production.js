@@ -29,7 +29,7 @@ module.exports = {
    **************************************************************************/
 
   models: {
-    datastore: "sentinel",
+    datastore: 'sentinel',
 
     /***************************************************************************
      *                                                                          *
@@ -41,7 +41,7 @@ module.exports = {
      * https://sailsjs.com/docs/concepts/models-and-orm/model-settings#?migrate *
      *                                                                          *
      ***************************************************************************/
-    migrate: "safe",
+    migrate: 'safe',
 
     /***************************************************************************
      *                                                                          *
@@ -162,7 +162,7 @@ module.exports = {
    *                                                                         *
    ***************************************************************************/
   log: {
-    level: "error",
+    level: 'error',
   },
 
   http: {
@@ -201,7 +201,7 @@ module.exports = {
    * this, just try deploying without setting it and see if it works.)       *
    *                                                                         *
    ***************************************************************************/
-  port: 8081,
+  port: process.env.PORT || 8081,
 
   /**************************************************************************
    *                                                                         *
@@ -231,7 +231,7 @@ module.exports = {
    *                                                                         *
    ***************************************************************************/
   custom: {
-    baseUrl: "http://gloss.space/api/sentinel",
+    baseUrl: process.env.BASE_URL,
     // baseUrl: 'https://example.com',
     // internalEmailAddress: 'support@example.com',
 
