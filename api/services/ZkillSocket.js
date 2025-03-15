@@ -77,7 +77,10 @@ let ZkillSocket = {
     });
 
     this.socket.on('message', async (data) => {
-      let package = await Package.create({ body: data }).fetch();
+      // Convert Buffer to string
+      const parsedData = JSON.parse(data.toString());
+
+      let package = await Package.create({ body: parsedData }).fetch();
 
       let job = sails.config.jobs.create('process_zkill_package', {
         id: package.id,

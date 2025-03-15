@@ -135,7 +135,7 @@ function init() {
     );
 
     Package.findOne(job.data.id).then((package) => {
-      let resolvedPackage = JSON.parse(package.body);
+      let resolvedPackage = package.body;
 
       if (!_shouldTrack(resolvedPackage)) {
         sails.log.debug(
