@@ -8,10 +8,8 @@
 
 module.exports = {
   models: {
-    datastore: 'sentinel',
+    datastore: 'default',
   },
-
   port: process.env.PORT || 8081,
-
   hookTimeout: 60000,
 };

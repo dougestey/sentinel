@@ -16,7 +16,7 @@ const port = process.env.REDIS_PORT || 6379;
 // Kue configuration
 const webUiPort = process.env.WEB_UI_PORT || 6574;
 
-let jobs = kue.createQueue({
+const jobs = kue.createQueue({
   prefix: 'sentinel',
   redis: {
     host,

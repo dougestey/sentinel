@@ -14,7 +14,7 @@
  */
 
 module.exports.datastores = {
-  sentinel: {
+  default: {
     adapter: 'sails-postgresql',
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT,
@@ -27,7 +27,7 @@ module.exports.datastores = {
     adapter: 'sails-postgresql',
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT,
-    database: process.env.DATABASE_NAME + '_sde',
+    database: 'sde',
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
   },
