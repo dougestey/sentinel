@@ -6,10 +6,11 @@
  */
 
 let Resolver = {
-
   async position(position, systemId) {
     if (!position || !systemId) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [Resolver] ESI failure: Incomplete position data`);
+      sails.log.error(
+        `[${new Date().toLocaleTimeString()}] [Resolver] ESI failure: Incomplete position data`
+      );
 
       return 'Unknown';
     }
@@ -18,15 +19,14 @@ let Resolver = {
 
     try {
       response = await Fuzzworks.nearestCelestial(position, systemId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [Resolver] Fuzzworks failure: ${e}`);
+    } catch (e) {
+      sails.log.error(
+        `[${new Date().toLocaleTimeString()}] [Resolver] Fuzzworks failure: ${e}`
+      );
       return 'Unknown';
     }
 
-    let {
-      itemName,
-      typeid: typeId,
-      itemid: itemId } = response;
+    let { itemName, typeid: typeId, itemid: itemId } = response;
 
     // Unfortunately Fuzzworks doesn't give us an itemName for stargates.
     // It does seem to handle belts and stations fine. More testing req'd.
@@ -45,8 +45,7 @@ let Resolver = {
       }
     }
 
-    if (itemName === 'bad item')
-      return 'Abyssal Deadspace';
+    if (itemName === 'bad item') return 'Abyssal Deadspace';
 
     return itemName ? itemName : 'Unknown';
   },
@@ -66,15 +65,13 @@ let Resolver = {
 
     _.forEach(ids, (shipTypeId, characterId) => {
       let charIndex = _.findIndex(characters, 'id', parseInt(characterId)),
-          shipIndex = _.findIndex(ships, 'id', shipTypeId);
+        shipIndex = _.findIndex(ships, 'id', shipTypeId);
 
-      if (charIndex !== -1)
-        characters[charIndex].ship = ships[shipIndex];
+      if (charIndex !== -1) characters[charIndex].ship = ships[shipIndex];
     });
 
     return { characters, ships };
-  }
-
+  },
 };
 
 module.exports = Resolver;

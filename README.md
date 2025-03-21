@@ -2,7 +2,8 @@
 
 A WebSocket-compatible kill & fleet tracker for EVE Online, built [on Sails.js](https://sailsjs.com/). Part of the magic behind the [GLOSS](https://github.com/dougestey/gloss) project.
 
-## Features ##
+## Features
+
 - Backed by PostgreSQL
 - Live reporting from zKillboard's [WebSocket service](https://github.com/zKillboard/zKillboard/wiki/Websocket)
 - Identifies fleet patterns based on recorded kills
@@ -10,16 +11,16 @@ A WebSocket-compatible kill & fleet tracker for EVE Online, built [on Sails.js](
 - Resolves shiptypes and systems via the [EVE Online SDE](https://developers.eveonline.com/resource/resources)
 - Sophisticated job queue scheduling via [Kue](https://github.com/Automattic/kue)
 
-## Environment ##
+## Environment
 
 - Install Node >= 8
 - Install Yarn
-- Install and [configure](config/datastores.js) a database (PostgreSQL preferred) 
+- Install and [configure](config/datastores.js) a database (PostgreSQL preferred)
 - Install and [configure](config/jobs.js) Redis
 
 The app will refuse to run without a valid root-level `.env` - see the [example file.](.env.example)
 
-## Boot ##
+## Boot
 
     $ cd sentinel
     $ yarn
@@ -31,7 +32,7 @@ Provided it's not firewalled, a frontend to the job queue will be available at `
 
 If you're going to leave this thing running permanently, you should run it with `NODE_ENV=production` (i.e. `npm start`).
 
-## Support ##
+## Support
 
 Got a problem? File a GitHub issue. Please be nice.
 

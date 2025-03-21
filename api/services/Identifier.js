@@ -10,22 +10,25 @@
 //
 // Now that Sentinel uses PostgreSQL with real character IDs as unique
 // identifiers, this function should return the same thing passed to it.
-let _resolveCharactersToIds = async(ids) => {
+let _resolveCharactersToIds = async (ids) => {
   let resolved = [];
 
-  sails.log.silly(`[Identifier._resolveCharactersToIds] Resolving ${ids.length} characters...`);
+  sails.log.silly(
+    `[Identifier._resolveCharactersToIds] Resolving ${ids.length} characters...`
+  );
 
   for (let characterId of ids) {
     let character;
 
     try {
       character = await Swagger.character(characterId);
-    } catch(e) {
-      sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._resolveCharactersToIds] ${JSON.stringify(e)}`);
+    } catch (e) {
+      sails.log.error(
+        `[${new Date().toLocaleTimeString()}] [Identifier._resolveCharactersToIds] ${JSON.stringify(e)}`
+      );
     }
 
-    if (character && character.id)
-      resolved.push(character.id);
+    if (character && character.id) resolved.push(character.id);
   }
 
   sails.log.silly('[Identifier._resolveCharactersToIds] End');
@@ -42,7 +45,7 @@ let _determineActiveCharacters = (kills) => {
       characterId = parseInt(characterId);
 
       characterIds.push(characterId);
-    };
+    }
   });
 
   return _.uniq(characterIds);
@@ -61,13 +64,15 @@ let _determineActiveComposition = (kills) => {
   return totalComposition;
 };
 
-let _createFleet = async(killmail, kill, system) => {
+let _createFleet = async (killmail, kill, system) => {
   let { killmail_time: startTime } = killmail,
-      lastSeen = startTime,
-      characters = await _resolveCharactersToIds(killmail.attackers.map((a) => a.character_id)),
-      composition = _determineActiveComposition([kill]),
-      configuration = 'unknown',
-      isActive = true;
+    lastSeen = startTime,
+    characters = await _resolveCharactersToIds(
+      killmail.attackers.map((a) => a.character_id)
+    ),
+    composition = _determineActiveComposition([kill]),
+    configuration = 'unknown',
+    isActive = true;
 
   let fleet = await Fleet.create({
     startTime,
@@ -75,10 +80,15 @@ let _createFleet = async(killmail, kill, system) => {
     composition,
     configuration,
     isActive,
-    system
+    system,
   })
-  .intercept((e) => sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._createFleet] Fleet create error:`, e))
-  .fetch();
+    .intercept((e) =>
+      sails.log.error(
+        `[${new Date().toLocaleTimeString()}] [Identifier._createFleet] Fleet create error:`,
+        e
+      )
+    )
+    .fetch();
 
   await Fleet.addToCollection(fleet.id, 'characters').members(characters);
   await Fleet.addToCollection(fleet.id, 'history').members(characters);
@@ -87,16 +97,20 @@ let _createFleet = async(killmail, kill, system) => {
   return FleetSerializer.one(fleet.id);
 };
 
-let _updateFleet = async(fleet, kill, system) => {
+let _updateFleet = async (fleet, kill, system) => {
   if (!fleet) {
-    return sails.log.error(`[${new Date().toLocaleTimeString()}] [Identifier._updateFleet] No fleet to update`);
+    return sails.log.error(
+      `[${new Date().toLocaleTimeString()}] [Identifier._updateFleet] No fleet to update`
+    );
   }
 
   // First we add the kill to the fleet's collection, as it will impact other data.
   await Fleet.addToCollection(fleet.id, 'kills').members([kill.id]);
 
   // Then we fetch the three latest kills in order to determine who's actively in the fleet.
-  let latestKills = await Kill.find({ fleet: fleet.id }).sort('time DESC').limit(3);
+  let latestKills = await Kill.find({ fleet: fleet.id })
+    .sort('time DESC')
+    .limit(3);
   let existingCharacters = await Character.find({ fleet: fleet.id });
   let activeCharacters = _determineActiveCharacters(latestKills);
   let composition = _determineActiveComposition(latestKills);
@@ -121,7 +135,9 @@ let _updateFleet = async(fleet, kill, system) => {
   await Fleet.addToCollection(fleet.id, 'history').members(activeCharacters);
 
   // Update the fleet's collection of characters. This will drop expired ones.
-  await Fleet.replaceCollection(fleet.id, 'characters').members(activeCharacters);
+  await Fleet.replaceCollection(fleet.id, 'characters').members(
+    activeCharacters
+  );
 
   // Update other attributes on the fleet
   await Fleet.update(fleet.id, {
@@ -135,28 +151,29 @@ let _updateFleet = async(fleet, kill, system) => {
 };
 
 let Identifier = {
-
   async fleet(killmail, system, kill) {
     // Attackers without a corporation ID aren't relevant
-    let attackers = killmail.attackers.filter((a) => a.corporation_id).map((a) => a.character_id);
+    let attackers = killmail.attackers
+      .filter((a) => a.corporation_id)
+      .map((a) => a.character_id);
 
     // Some of the [] above will be undefined due to no corporation_id (NPC etc)
     // We still need the total number of attackers for scoring logic, so create a new compacted []
     let attackersWithIds = _.compact(attackers);
 
     // No real players with corporation_ids = no identifiable fleet
-    if (!attackersWithIds.length)
-      return;
+    if (!attackersWithIds.length) return;
 
-    sails.log.silly(`[Identifier.fleet] Fetching active fleet records related to km...`);
+    sails.log.silly(
+      `[Identifier.fleet] Fetching active fleet records related to km...`
+    );
 
     let fleetIds = [];
 
     for (let characterId of attackersWithIds) {
       let record = await Character.findOne(characterId);
 
-      if (record && record.fleet)
-        fleetIds.push(record.fleet);
+      if (record && record.fleet) fleetIds.push(record.fleet);
     }
 
     // Some of the pilots above will be in the same fleet already. No point in resolving
@@ -166,10 +183,11 @@ let Identifier = {
     let fleets = [];
 
     for (let id of fleetIds) {
-      let record = await Fleet.findOne({ id, isActive: true }).populate('characters');
+      let record = await Fleet.findOne({ id, isActive: true }).populate(
+        'characters'
+      );
 
-      if (record)
-        fleets.push(record);
+      if (record) fleets.push(record);
     }
 
     // No matches; create a fleet.
@@ -191,7 +209,10 @@ let Identifier = {
 
       let mostPilots, leastPilots;
 
-      if (attackersWithIds.length > characters.length || attackersWithIds.length === characters.length) {
+      if (
+        attackersWithIds.length > characters.length ||
+        attackersWithIds.length === characters.length
+      ) {
         mostPilots = attackersWithIds;
         leastPilots = characters;
       } else {
@@ -200,14 +221,18 @@ let Identifier = {
       }
 
       let differentIds = _.difference(mostPilots, leastPilots),
-          similarity = 1 - differentIds.length / mostPilots.length;
+        similarity = 1 - differentIds.length / mostPilots.length;
 
       return { id, similarity, size: characters.length };
     });
 
     sails.log.silly(`[Identifier.fleet] Sorting potential matches...`);
 
-    candidates = _.sortByOrder(candidates, ['similarity', 'size'], ['desc', 'desc']);
+    candidates = _.sortByOrder(
+      candidates,
+      ['similarity', 'size'],
+      ['desc', 'desc']
+    );
 
     let bestMatch = _.first(candidates);
     let fleet = _.find(fleets, (f) => f.id === bestMatch.id);
@@ -219,8 +244,7 @@ let Identifier = {
       // No matches whatsoever. Create a fleet.
       return _createFleet(killmail, kill, system);
     }
-  }
-
+  },
 };
 
 module.exports = Identifier;

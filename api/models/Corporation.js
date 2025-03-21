@@ -6,23 +6,13 @@
  */
 
 module.exports = {
-
   attributes: {
-
     id: { type: 'number', autoIncrement: false, required: true },
-
     name: 'string',
-
     ticker: 'string',
-
     memberCount: 'number',
-
     activeCombatPilots: 'number',
-
     hasSupers: 'boolean',
-
-    dangerRatio: 'number'
-
-  }
-
+    dangerRatio: 'number',
+  },
 };

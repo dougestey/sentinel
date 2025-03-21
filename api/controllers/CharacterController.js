@@ -6,17 +6,16 @@
  */
 
 module.exports = {
-
   async find(req, res) {
     let { name } = req.query;
 
     if (name) {
       characters = await Character.find({
-        where: { 
+        where: {
           name: {
-            contains: name
-          }
-        }
+            contains: name,
+          },
+        },
       });
     } else {
       characters = await Character.find(req.query);
@@ -34,17 +33,14 @@ module.exports = {
   },
 
   async findOne(req, res) {
-    if (!req.params.id)
-      return res.badRequest();
+    if (!req.params.id) return res.badRequest();
 
     let { id } = req.params;
 
     let character = await CharacterSerializer.one(id);
 
-    if (!character)
-      return res.notFound();
+    if (!character) return res.notFound();
 
     return res.status(200).json(character);
-  }
-
+  },
 };

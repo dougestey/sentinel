@@ -7,13 +7,9 @@
  */
 
 module.exports = {
-
   models: {
-    datastore: 'sentinelDev'
+    datastore: 'default',
   },
-
-  port: 8101,
-
-  hookTimeout: 60000
-
+  port: process.env.PORT || 8081,
+  hookTimeout: 60000,
 };

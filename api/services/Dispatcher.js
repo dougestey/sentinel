@@ -8,7 +8,6 @@
 let pool = {};
 
 let Dispatcher = {
-
   joinPool(req) {
     let socketId = sails.sockets.getId(req);
 
@@ -23,7 +22,9 @@ let Dispatcher = {
 
       pool[socketId] = [];
     } else {
-      sails.log.debug(`[Dispatcher.joinPool] ${socketId} is already in the pool.`);
+      sails.log.debug(
+        `[Dispatcher.joinPool] ${socketId} is already in the pool.`
+      );
     }
   },
 
@@ -31,14 +32,15 @@ let Dispatcher = {
   notifySockets(data, type) {
     sails.io.sockets.in('activeSockets').clients((err, members) => {
       members.map((socketId) => {
-        sails.log.debug(`[Dispatcher.notifySockets] Notifying ${socketId} of ${type}...`);
+        sails.log.debug(
+          `[Dispatcher.notifySockets] Notifying ${socketId} of ${type}...`
+        );
         sails.log.silly(`[Dispatcher.notifySockets] ${data}`);
 
         sails.sockets.broadcast(socketId, type, data);
       });
     });
-  }
-
+  },
 };
 
 module.exports = Dispatcher;

@@ -6,22 +6,19 @@
  */
 
 module.exports = {
-
   async findOne(req, res) {
-    if (!req.params.id)
-      return res.badRequest();
+    if (!req.params.id) return res.badRequest();
 
     let { id } = req.params;
 
     let fleet = await FleetSerializer.one(id);
 
-    if (!fleet)
-      return res.notFound();
+    if (!fleet) return res.notFound();
 
     return res.status(200).json(fleet);
   },
 
-  async active (req, res) {
+  async active(req, res) {
     let fleets = await Fleet.find({ isActive: true });
     let resolved = [];
 
@@ -32,6 +29,5 @@ module.exports = {
     }
 
     return res.status(200).json(resolved);
-  }
-
+  },
 };

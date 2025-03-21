@@ -1,7 +1,6 @@
 module.exports = {
-
   async one(idOrName) {
-    let query = (function() {
+    let query = (function () {
       if (isNaN(idOrName)) {
         return { name: idOrName };
       } else {
@@ -16,8 +15,7 @@ module.exports = {
       .populate('history');
 
     let knownCyno = false;
-    let losses = await Kill.find({ victim: character.id })
-      .sort('time DESC');
+    let losses = await Kill.find({ victim: character.id }).sort('time DESC');
 
     for (let loss of losses) {
       for (let item of loss.items) {
@@ -31,6 +29,5 @@ module.exports = {
     character.knownCyno = knownCyno;
 
     return character;
-  }
-
+  },
 };

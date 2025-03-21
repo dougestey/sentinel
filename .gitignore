@@ -131,3 +131,7 @@ lib-cov
 *.pid
 
 .env
+.github
+
+# EVE SDE
+evedb/

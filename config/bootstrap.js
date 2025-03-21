@@ -9,10 +9,9 @@
  * https://sailsjs.com/config/bootstrap
  */
 
-require('dotenv-safe').config();
+require('dotenv').config();
 
-module.exports.bootstrap = async function(done) {
-
+module.exports.bootstrap = async function (done) {
   let offset = parseInt(process.env.BACKFILL_OFFSET);
 
   // Status object
@@ -20,25 +19,23 @@ module.exports.bootstrap = async function(done) {
     backfill: {
       start: offset,
       current: offset,
-      completed: 0
+      completed: 0,
     },
     failures: {
       esi: 0,
       zkill: 0,
       sentinel: 0,
-      other: 0
+      other: 0,
     },
     started: new Date().toISOString(),
-    connected: false
+    connected: false,
   };
 
   // Job queue kickoff (config/jobs.js)
   sails.config.jobs.init();
 
-  if (process.env.TRACK_ENABLED === 'true')
-    ZkillSocket.connect();
+  if (process.env.TRACK_ENABLED === 'true') ZkillSocket.connect();
 
   // Needed for Sails to complete lift.
   return done();
-
 };
